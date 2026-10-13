@@ -173,7 +173,6 @@ export interface SkinInput {
   locales: string[];
   categories: { key: string; icon: string }[];
   clearContent: boolean;
-  clearLanding: boolean;
   /** Homepage preset: 'codes' | 'guides' | 'keep' */
   homePreset: 'codes' | 'guides' | 'keep';
 }

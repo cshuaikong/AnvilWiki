@@ -89,7 +89,6 @@ const answers = [
   'bosses,guides,codes', // Categories
   'y', // Clear demo content? YES
   preset === 'guides' ? '2' : '1', // Homepage preset
-  '', // Remove landing? (default yes)
   'y', // Proceed? YES
 ];
 writeFileSync(join(scratch, 'e2e-answers.json'), JSON.stringify(answers, null, 2));
@@ -119,9 +118,6 @@ if (/left over/.test((cli.stdout || '') + (cli.stderr || ''))) {
 
 // 4. Assert the output shape — the exact fields the home components render.
 step('Assert output shape');
-for (const p of ['src/config/landing.ts', 'src/config/landing-types.ts', 'src/config/landing-shared.ts', 'src/config/landing-en.ts', 'src/config/landing-zh.ts', 'src/config/landing-templates.ts', 'src/components/landing', 'src/pages/landing', 'src/pages/zh/landing']) {
-  if (existsSync(join(scratch, p))) fail(`landing path still present after removal: ${p}`);
-}
 // Upstream's own search-console token must not ride along into forks
 // (DEMO_PUBLIC_FILES, cleared by clearDemoAssets). Vacuous until the file is
 // committed to the tree git archive snapshots — meaningful from then on.
@@ -135,15 +131,9 @@ for (const unit of ['sticky-320x50', 'sidebar-300x250', 'sidebar-160x300', 'side
     fail(`demo ad unit page still present after fork init: public/ads/${unit}.html — DEMO_PUBLIC_FILES was not cleared`);
   }
 }
-// Audit round 21 tripwires: the landing-link flip must have happened (a
-// silent no-op leaves fork nav pointing at the deleted /landing/ routes),
-// and the retired pre-env demo IndexNow key file must never ride along
+// The retired pre-env demo IndexNow key file must never ride along
 // (DEMO_PUBLIC_FILES; vacuous while the file stays out of the tree —
 // meaningful if anyone ever re-commits it).
-const projectTs = readFileSync(join(scratch, 'src/config/project.ts'), 'utf8');
-if (projectTs.includes('landingLinkEnabled = true')) {
-  fail('landingLinkEnabled still true after landing removal — the flip went silently missing');
-}
 if (existsSync(join(scratch, 'public', '39a73e7c4264b418baa6757d20446910.txt'))) {
   fail('retired demo IndexNow key file still present — DEMO_PUBLIC_FILES regression');
 }

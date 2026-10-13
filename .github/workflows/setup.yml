@@ -4,11 +4,10 @@
 # Safe-to-automate, non-interactive steps only:
 #   1. Reset wrangler.toml [vars] to your domain (SITE_URL) + clear demo Giscus values
 #   2. Generate one stable .indexnow-key (re-runs reuse it; no env setup needed)
-#   3. Remove the project landing page (fork users don't need it)
-#   4. Optionally clear demo wiki articles (default: yes — content-aware:
+#   3. Optionally clear demo wiki articles (default: yes — content-aware:
 #      demo-marked articles are deleted; YOUR OWN articles survive a re-run
 #      and are reported one by one)
-#   5. Open a PR with the changes for you to review
+#   4. Open a PR with the changes for you to review
 #
 # What this does NOT do (run `pnpm apply-template` locally for these):
 #   game name / theme color / locales / homepage copy — see docs/apply-template.md.
@@ -251,19 +250,6 @@ jobs:
         id: vars
         run: echo "site_url=$(grep -m1 '^SITE_URL = ' wrangler.toml | sed 's/^SITE_URL = \"\(.*\)\"$/\1/')" >> "$GITHUB_OUTPUT"
 
-      - name: Remove project landing page
-        run: |
-          # Keep in sync with LANDING_PATHS in scripts/apply-template.ts —
-          # forgetting src/pages/landing (docs routes) leaves files importing
-          # the deleted ~/config/landing and breaks the fork's build.
-          rm -rf src/components/landing src/config/landing.ts src/config/landing-types.ts src/config/landing-shared.ts src/config/landing-en.ts src/config/landing-zh.ts src/config/landing-templates.ts src/pages/landing.astro src/pages/landing src/pages/zh/landing.astro src/pages/zh/landing public/images/showcase public/images/wechat-qr.jpg public/_redirects
-          sed -i.bak 's/landingLinkEnabled = true/landingLinkEnabled = false/' src/config/project.ts && rm -f src/config/project.ts.bak
-          # The flip must never be a silent no-op (audit round 21): a drifted
-          # pattern would leave fork nav pointing at the deleted /landing/
-          # routes with no build error. Same loud-fail policy as the [vars]
-          # match-nothing guard above.
-          grep -q 'landingLinkEnabled = false' src/config/project.ts || { echo "❌ landingLinkEnabled flip matched nothing — template drift? Update this step." >&2; exit 1; }
-
       - name: Clear demo assets and demo author
         if: ${{ inputs.clear_demo_content != 'false' }}
         run: |
@@ -312,7 +298,7 @@ jobs:
           node-version-file: '.nvmrc'
           cache: pnpm
 
-      # The init PR is destructive (landing removed, demo MDX deleted) and
+      # The init PR is destructive (wrangler vars reset, demo MDX deleted) and
       # PRs opened with GITHUB_TOKEN do NOT trigger CI — so the workflow
       # itself must prove the tree still builds before handing it to the
       # user. Catches file-list drift in the steps above, broken imports,
@@ -367,7 +353,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "Nothing to commit — template already initialized."
           else
-            git commit -m "chore(init): apply template defaults (wrangler vars, remove landing)"
+            git commit -m "chore(init): apply template defaults (wrangler vars, clear demo content)"
           fi
           # The shallow checkout has no remote-tracking ref for the branch, so
           # --force-with-lease alone rejects idempotent re-runs ("stale info").
@@ -381,7 +367,7 @@ jobs:
             echo "PR already exists — leaving the existing one open."
           else
             gh pr create --title "Initialize AnvilWiki for your game" \
-              --body "Automated by the Initialize AnvilWiki workflow. wrangler.toml [vars] reset to ${SITE_URL_INPUT} (demo Giscus cleared); stable .indexnow-key generated; project landing page removed. Next: run pnpm apply-template locally for game name / theme / locales, then connect Cloudflare Pages (docs/deployment.md)."
+              --body "Automated by the Initialize AnvilWiki workflow. wrangler.toml [vars] reset to ${SITE_URL_INPUT} (demo Giscus cleared); stable .indexnow-key generated. Next: run pnpm apply-template locally for game name / theme / locales, then connect Cloudflare Pages (docs/deployment.md)."
           fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

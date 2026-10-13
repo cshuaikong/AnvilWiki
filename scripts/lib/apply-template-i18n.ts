@@ -8,7 +8,7 @@
  *   - Interactive TTY runs ask a language question first (1 = 中文, 2 =
  *     English; enter = the LANG-derived default).
  *   - Non-interactive runs (--answers, pipes, CI) NEVER ask — scripted answer
- *     files keep their exact positional order (18 entries, pinned by
+ *     files keep their exact positional order (17 entries, pinned by
  *     pnpm test:e2e) — and default to English. Pass `--lang zh` (or
  *     `--lang=zh`) to drive them in Chinese.
  *
@@ -39,7 +39,6 @@ const en = {
   secCategories: 'Content categories (comma-separated keys, lowercase)',
   secContentLayer: '⚠️  CONTENT LAYER',
   secHomePreset: '🏠  Homepage preset',
-  secLanding: '🌐  PROJECT LANDING PAGE',
   secPlanned: (dry: boolean) =>
     `📋 Planned changes${dry ? ' (DRY RUN — nothing will be written)' : ''}`,
   secComplete: '✅ Base config complete.',
@@ -60,7 +59,6 @@ const en = {
   qCategories: 'Categories',
   qPreset: 'Preset [1/2/3]',
   qClearContent: 'Clear demo content?',
-  qRemoveLanding: 'Remove the project landing page (/landing)?',
   qProceed: '\nProceed with these changes?',
 
   hintCommonCategories: '   Common: bosses, guides, items, codes, tier-list, characters',
@@ -74,9 +72,6 @@ const en = {
   contentLayerAware1: '   Clearing is CONTENT-AWARE: demo-authored articles are removed, and',
   contentLayerAware2: '   anything else (articles/scaffolds you wrote) is KEPT with a warning.',
   contentLayerAware3: '   Directory structure is preserved for you to drop in new content.',
-
-  landingInfo1: '   /landing is a marketing page for the AnvilWiki project itself.',
-  landingInfo2: '   Your game wiki does not need it. Removing it keeps your repo clean.',
 
   themeUnreadableWarn:
     '⚠️ Could not read the current theme color from src/styles/globals.css — defaulting to #f97316.',
@@ -96,7 +91,6 @@ const en = {
   plannedCategories: '   Categories:  ',
   plannedNone: '(none)',
   plannedClear: '   Clear demo:  ',
-  plannedLanding: '   Remove /landing: ',
   plannedYes: 'YES',
   plannedNo: 'no',
   plannedFilesHeader: '   Files to write:',
@@ -140,8 +134,6 @@ const en = {
     `   ⚠️  Kept ${n} file(s) that are NOT demo content — they never mention the demo game (${names}). Delete them yourself if unwanted:`,
   scaffoldCreated: (n: number) =>
     `   📄 Created ${n} scaffold article${n === 1 ? '' : 's'} (one per category, en/)`,
-  landingRemoved: (n: number) =>
-    `   🗑️  Removed ${n} project landing page file${n === 1 ? '' : 's'} (src/components/landing/, src/config/landing*.ts, src/pages/landing* incl. the /landing/docs center, public/images/showcase/ + wechat-qr.jpg; docs/handbook markdown stays as repo docs)`,
 
   nextStepsHeader: '📌 Remaining tasks (see docs/apply-template.md):',
   nextIcons1: '   • Replace the icon set — your site still shows the demo anvil icons.',
@@ -183,7 +175,6 @@ const zh: CliStrings = {
   secCategories: '内容栏目(逗号分隔的小写 key)',
   secContentLayer: '⚠️  内容层',
   secHomePreset: '🏠  首页预设',
-  secLanding: '🌐  项目官网页',
   secPlanned: (dry) => `📋 计划修改${dry ? '(试运行 — 不会写入任何文件)' : ''}`,
   secComplete: '✅ 基础配置完成。',
 
@@ -203,7 +194,6 @@ const zh: CliStrings = {
   qCategories: '栏目列表',
   qPreset: '首页预设 [1/2/3]',
   qClearContent: '清除 demo 示例内容?',
-  qRemoveLanding: '删除项目官网页(/landing)?',
   qProceed: '\n确认执行以上修改?',
 
   hintCommonCategories: '   常用:bosses, guides, items, codes, tier-list, characters',
@@ -217,9 +207,6 @@ const zh: CliStrings = {
   contentLayerAware1: '   清理是「内容感知」的:判定为 demo 的文章会被删除,',
   contentLayerAware2: '   其余(你自己写的文章/脚手架)会保留并逐个警告。',
   contentLayerAware3: '   目录结构保留,方便你直接放入新内容。',
-
-  landingInfo1: '   /landing 是 AnvilWiki 模板项目自己的宣传页。',
-  landingInfo2: '   你的游戏站用不到它,删掉可以让仓库保持干净。',
 
   themeUnreadableWarn: '⚠️ 无法从 src/styles/globals.css 读取当前主题色 — 回退默认 #f97316。',
   invalidHexError: (hex) => `❌ 颜色值 "${hex}" 不合法,应为 #rgb 或 #rrggbb 格式。`,
@@ -238,7 +225,6 @@ const zh: CliStrings = {
   plannedCategories: '   栏目:        ',
   plannedNone: '(无)',
   plannedClear: '   清除 demo 内容:  ',
-  plannedLanding: '   删除 /landing: ',
   plannedYes: '是',
   plannedNo: '否',
   plannedFilesHeader: '   将写入的文件:',
@@ -274,8 +260,6 @@ const zh: CliStrings = {
   keptFilesWarn: (n, names) =>
     `   ⚠️  保留了 ${n} 个「非 demo 内容」的文件 — 它们从未提到 demo 游戏(${names})。若不需要请自行删除:`,
   scaffoldCreated: (n) => `   📄 已创建 ${n} 篇脚手架文章(每个所选栏目一篇,en/)`,
-  landingRemoved: (n) =>
-    `   🗑️  已删除 ${n} 个项目官网页文件(src/components/landing/、src/config/landing*.ts、src/pages/landing* 含 /landing/docs 文档中心、public/images/showcase/ + wechat-qr.jpg;docs/handbook 手册 markdown 保留作参考文档)`,
 
   nextStepsHeader: '📌 剩余任务(详见 docs/apply-template.md):',
   nextIcons1: '   • 换图标 — 你的站现在还是模板的铁砧图标。',

@@ -40,9 +40,9 @@ describe('CHANGELOG release contract', () => {
 
   test('PROJECT_VERSION stays in sync with package.json (version 五处 release checklist, now gated)', () => {
     const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')) as { version: string };
-    const shared = readFileSync(join(root, 'src/config/landing-shared.ts'), 'utf8');
-    const projectVersion = shared.match(/PROJECT_VERSION = '([^']+)'/)?.[1];
-    expect(projectVersion, "src/config/landing-shared.ts must keep PROJECT_VERSION = '<package.json version>'").toBe(
+    const project = readFileSync(join(root, 'src/config/project.ts'), 'utf8');
+    const projectVersion = project.match(/PROJECT_VERSION = '([^']+)'/)?.[1];
+    expect(projectVersion, "src/config/project.ts must keep PROJECT_VERSION = '<package.json version>'").toBe(
       pkg.version,
     );
   });

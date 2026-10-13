@@ -595,13 +595,6 @@ describe('setup.yml failure surfaces are loud (audit round 21)', () => {
     expect(setupRaw.indexOf('gh pr view')).toBeLessThan(setupRaw.indexOf('gh pr create'));
   });
 
-  test('the landingLinkEnabled flip fails loudly on pattern drift', () => {
-    // A silent no-op sed would leave fork nav pointing at the deleted
-    // /landing/ routes with no build error — same loud-fail policy as the
-    // [vars] match-nothing guard above it.
-    expect(setupRaw).toContain("grep -q 'landingLinkEnabled = false' src/config/project.ts");
-  });
-
   test('custom [vars] keys are preserved verbatim, not dropped (single-source rule with the CLI)', () => {
     // rewriteWranglerVars (the JS channel) preserves and warns for keys
     // outside the template; the python channel must behave the same. Pinned

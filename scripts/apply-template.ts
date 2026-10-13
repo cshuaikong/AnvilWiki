@@ -7,16 +7,10 @@
  *   pnpm apply-template                   interactive: prompts for game metadata, theme color,
  *                               locales, and categories; rewrites the config files
  *                               (site.ts, navigation.ts, globals.css, routing.ts,
- *                               ui.ts, locales/*.json, manifest.json), clears
- *                               demo content (src/content/wiki/* MDX), and removes
- *                               the project landing page + in-site docs center
- *                               (/landing, /landing/docs) and its assets
- *                               (public/images/showcase/, wechat QR) — not
- *                               needed by fork users; docs/handbook markdown
- *                               is kept as repo docs.
+ *                               ui.ts, locales/*.json, manifest.json) and clears
+ *                               demo content (src/content/wiki/* MDX).
  *   pnpm apply-template --dry-run         print every planned change, write nothing.
  *   pnpm apply-template --no-clear-content  keep demo MDX files in place.
- *   pnpm apply-template --keep-landing      keep the project landing page (/landing).
  *   pnpm apply-template --answers answers.json  non-interactive: JSON array of
  *                               raw answers, one per prompt in order ("" = enter
  *                               = default). For CI and scripted runs.
@@ -24,7 +18,7 @@
  *                               Interactive TTY runs are asked instead (enter =
  *                               the LANG-derived default); --answers/piped/CI
  *                               runs never ask and default to English, so the
- *                               18-answer positional order stays stable.
+ *                               17-answer positional order stays stable.
  *
  * What this does NOT do (left for the user, see docs/apply-template.md):
  *   - Homepage modules (home.hero / start / explore / faq in locales)
@@ -86,7 +80,6 @@ const ROOT = process.cwd();
 const ARGS = process.argv.slice(2);
 const DRY_RUN = ARGS.includes('--dry-run') || ARGS.includes('-n');
 const KEEP_CONTENT = ARGS.includes('--no-clear-content');
-const KEEP_LANDING = ARGS.includes('--keep-landing');
 
 // CLI UI language. `--lang` forces it; otherwise an interactive TTY is asked
 // (askLanguage below) and every non-interactive channel (--answers, pipes,
@@ -581,74 +574,6 @@ rendered from the frontmatter title), and start each section with a direct
   return created;
 }
 
-/**
- * Files/dirs that make up the project landing page (/landing) and its in-site
- * docs center (/landing/docs + /zh/landing/docs).
- * Fork users don't need these routes — they are about the AnvilWiki project
- * itself, not their game wiki. The CLI removes them automatically.
- *
- * NOTE: docs/handbook/ (the handbook markdown SOURCE) is deliberately NOT in
- * this list — the learning manual's SOPs and AI prompts stay useful to fork
- * users as repo docs; only the landing ROUTES above are removed. The handbook
- * collection in src/content.config.ts becomes an unloaded leftover (its glob
- * base still exists), which builds cleanly.
- *
- * Directory counts in removeLandingPage() are top-level entries (approximate).
- */
-const LANDING_PATHS = [
-  'src/components/landing', // directory (16 components incl. docs hub/chapter/nav/comparison)
-  'src/config/landing.ts', // facade re-exporting the split landing modules below
-  'src/config/landing-types.ts', // LandingLocale + LandingContent types
-  'src/config/landing-shared.ts', // PROJECT_VERSION + GitHub URLs + COMMUNITY_SITES
-  'src/config/landing-en.ts', // English landing copy
-  'src/config/landing-zh.ts', // Chinese landing copy
-  'src/config/landing-templates.ts', // "wiki page templates" showcase copy (v2.32.0)
-  'src/pages/landing.astro', // file — coexists with the src/pages/landing/ dir
-  'src/pages/landing', // directory (docs hub + chapter routes)
-  'src/pages/zh/landing.astro', // file — coexists with the src/pages/zh/landing/ dir
-  'src/pages/zh/landing', // directory (zh docs routes)
-  'public/images/showcase', // directory (demo screenshots + community site screenshots — landing only)
-  'public/images/wechat-qr.jpg', // maintainer's personal QR — not needed by forks
-  'public/_redirects', // 301s for renamed handbook lesson slugs — only the demo serves /landing/docs routes
-];
-
-function removeLandingPage(): number {
-  let removed = 0;
-  for (const rel of LANDING_PATHS) {
-    const abs = path.resolve(ROOT, rel);
-    if (!fs.existsSync(abs)) continue;
-    const stat = fs.statSync(abs);
-    if (stat.isDirectory()) {
-      // Count entries before deletion: reading the directory after rmSync()
-      // throws ENOENT in non-dry-run mode.
-      removed += fs.readdirSync(abs).length;
-      if (!DRY_RUN) fs.rmSync(abs, { recursive: true, force: true });
-    } else {
-      if (!DRY_RUN) fs.unlinkSync(abs);
-      removed++;
-    }
-  }
-  // Also disable the demo header's "back to landing" link so the removal is
-  // complete (the flag lives in project.ts, which survives this CLI).
-  // The flip must never be a silent no-op (audit round 21): a drifted pattern
-  // would leave fork nav pointing at the deleted /landing/ routes with no
-  // build error. Already-flipped files (re-runs) stay quiet.
-  const projectPath = path.resolve(ROOT, 'src/config/project.ts');
-  if (fs.existsSync(projectPath)) {
-    const src = read('src/config/project.ts');
-    const flipped = src.replace('landingLinkEnabled = true', 'landingLinkEnabled = false');
-    if (flipped !== src) {
-      if (!DRY_RUN) writeAtomic(projectPath, flipped);
-      removed++;
-    } else if (!src.includes('landingLinkEnabled = false')) {
-      console.warn(
-        '⚠️ Could not flip landingLinkEnabled in src/config/project.ts — pattern drifted? Disable the landing link manually, or the header will link at the removed /landing/ routes.',
-      );
-    }
-  }
-  return removed;
-}
-
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
@@ -825,16 +750,6 @@ async function main() {
   const homePreset: 'codes' | 'guides' | 'keep' =
     presetAnswer === '2' ? 'guides' : presetAnswer === '3' ? 'keep' : 'codes';
 
-  let clearLanding = false;
-  if (!KEEP_LANDING) {
-    console.log('\n' + '━'.repeat(60));
-    console.log(T.secLanding);
-    console.log('━'.repeat(60));
-    console.log(T.landingInfo1);
-    console.log(T.landingInfo2);
-    clearLanding = await askBool(rl, T.qRemoveLanding, true);
-  }
-
   // --- Summarize planned changes -----------------------------------------
   const skinInput: SkinInput = {
     gameName,
@@ -852,7 +767,6 @@ async function main() {
     locales: uniqueLocales,
     categories,
     clearContent,
-    clearLanding,
     homePreset,
   };
 
@@ -866,7 +780,6 @@ async function main() {
   console.log(`${T.plannedLocales}${uniqueLocales.join(', ')}`);
   console.log(`${T.plannedCategories}${categories.map((c) => c.key).join(', ') || T.plannedNone}`);
   console.log(`${T.plannedClear}${clearContent ? T.plannedYes : T.plannedNo}`);
-  console.log(`${T.plannedLanding}${skinInput.clearLanding ? T.plannedYes : T.plannedNo}`);
   console.log(T.plannedFilesHeader);
   console.log('     - src/config/site.ts');
   console.log('     - src/config/navigation.ts');
@@ -1037,13 +950,6 @@ async function main() {
     if (categories.length > 0) {
       const s = scaffoldContent(categories);
       console.log(T.scaffoldCreated(s));
-    }
-  }
-
-  if (skinInput.clearLanding) {
-    const n = removeLandingPage();
-    if (n > 0) {
-      console.log(T.landingRemoved(n));
     }
   }
 

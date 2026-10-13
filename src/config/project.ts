@@ -1,40 +1,23 @@
 /**
- * Project-level flags — describe the AnvilWiki open-source project itself,
- * NOT the demo game. This file survives `apply-template` (unlike the landing
- * page files, which the CLI removes).
- */
-
-/**
- * Whether the project landing page (/landing, /zh/landing) exists.
- * When true, the demo site header shows a small hammer icon linking to it,
- * so demo visitors can discover the template behind the demo.
+ * Project-level metadata — describes THIS REPOSITORY, not the demo game.
  *
- * `apply-template` flips this to false when it removes the landing page —
- * the header link disappears together with the pages.
+ * Not part of the site config layer: game/site identity lives in site.ts,
+ * navigation.ts, routing.ts and the locale JSON files. Nothing here needs to
+ * change when you build a different wiki on top of this template.
+ *
+ * (The landing-page link constants that used to live here — landingLink,
+ * zhLandingLink, landingLinkEnabled — were removed together with the project
+ * landing page and the in-site handbook.)
  */
-export const landingLinkEnabled = true;
 
 /**
- * Where the demo header's template entry points, and its visible copy. The
- * bare hammer icon alone read as a game feature ("forge"), so desktop shows a
- * short label next to the icon on wide screens. Gated by `landingLinkEnabled`
- * (apply-template flips the flag when it removes the landing layer, so forks
- * never render this) — which is also why the copy lives here as a proper-noun
- * badge instead of locale JSON: it is template marketing, not wiki UI, and
- * must not linger as orphan keys in forked locales.
+ * Template version — keep in sync with package.json `version`.
+ *
+ * Single source of truth for the release checklist. tests/changelog.test.ts
+ * pins it to package.json so a release that bumps one and forgets the other
+ * goes red instead of shipping a lie.
+ *
+ * (Relocated here from the deleted src/config/landing-shared.ts when the
+ * project landing page + handbook were removed.)
  */
-export const landingLink = {
-  href: '/landing/',
-  label: 'Built with AnvilWiki',
-  ariaLabel: 'About the AnvilWiki template',
-} as const;
-
-/**
- * Demo-only extra entry in the wiki language switcher: the marketing site has
- * a Chinese edition at /zh/landing/, but zh is NOT a wiki UI locale (routing
- * stays en+ja for content), so Chinese visitors landing on the wiki had zero
- * Chinese entry point (community feedback 2026-09-05 — two members hit it).
- * Gated by `landingLinkEnabled`: apply-template removes the landing layer and
- * flips the flag, so forks never render this.
- */
-export const zhLandingLink = { label: '中文 · 官网', href: '/zh/landing/' } as const;
+export const PROJECT_VERSION = '2.37.0';

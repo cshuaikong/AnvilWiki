@@ -82,7 +82,6 @@ function makeInput(overrides: Partial<SkinInput> = {}): SkinInput {
       { key: 'codes', icon: 'lucide:gift' },
     ],
     clearContent: true,
-    clearLanding: true,
     homePreset: 'codes',
     ...overrides,
   };
@@ -1469,7 +1468,5 @@ describe('apply-template CLI bilingual UI (--lang + interactive language questio
     expect(t.clearedArticles(1, true)).toContain('Would remove');
     expect(t.scaffoldCreated(1)).toContain('1 scaffold article (');
     expect(t.scaffoldCreated(3)).toContain('3 scaffold articles (');
-    expect(t.landingRemoved(1)).toContain('1 project landing page file (');
-    expect(t.landingRemoved(5)).toContain('5 project landing page files (');
   });
 });
