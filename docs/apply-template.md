@@ -19,7 +19,7 @@
 | 所有 UI 文案（首页、导航、页脚） | [src/locales/en.json](#5-ui文案) |
 | favicon / Hero 图 / PWA | [public/](#6-静态资源) |
 | 文章内容 | [src/content/wiki/](#7-mdx-文章) |
-| 广告 key | Cloudflare 环境变量 `PUBLIC_ADSENSE_*`（参考 [Google AdSense](https://adsense.google.com/)） |
+| 广告 key | Cloudflare 环境变量 `PUBLIC_ADSTERRA_SLOT_*`（参考 [docs/ads.md](./ads.md)） |
 
 > 想自动化基础配置？运行 `pnpm apply-template`，它会交互式引导你完成 site.ts / navigation.ts / globals.css / routing.ts / locales 的修改。脚本化/CI 场景用 `pnpm apply-template --answers answers.json` 非交互驱动（与交互同一问答路径，答案缺失或多余都会响亮报告）。交互界面默认英文，开头会先问一句界面语言（输 `1` 即全程中文提问，回车按系统 LANG 推导默认——中文终端默认中文）；非交互通道可用 `--lang zh` 指定中文，缺省英文——`--answers` 的答案位置序不受语言影响。注意：交互模式下开头的语言提问会消费你输入的第一行——整段粘贴答案文件请直接走 `--answers`，不要在交互模式里粘。
 
@@ -31,8 +31,8 @@
 
 | 通道 | 怎么触发 | 特点 |
 |---|---|---|
-| `pnpm apply-template`（本地 CLI） | 终端交互式，自己点确认 | 会改游戏名/主题/语言/栏目；删除前逐项确认 |
-| Actions → **Initialize AnvilWiki** workflow | fork 仓库里点 Run workflow | 只做安全项（wrangler 重置 + 删 landing + 清 demo），**开 PR 前先跑 `pnpm build` 验证**再交给你审 |
+| `pnpm apply-template`（本地 CLI） | 终端交互式，自己点确认 | 17 问；会改游戏名/主题/语言/栏目；删除前逐项确认 |
+| Actions → **Initialize AnvilWiki** workflow | fork 仓库里点 Run workflow | 只做安全项（wrangler 重置 + 清 demo），**开 PR 前先跑 `pnpm build` 验证**再交给你审 |
 
 **删除清单（两个通道一致，改动必须同步 `scripts/apply-template.ts` 与 `.github/workflows/setup.yml`）：**
 
@@ -43,17 +43,15 @@
 | demo 配图 | **全部按文件名删**（整目录 rm -rf 已废除）：`src/assets/gallery/` 6 张画廊图、`public/images/articles/` 2 张内文图、`src/assets/covers/` 9 张封面；清单见 `scripts/lib/apply-rewrites.ts` 的 `DEMO_COVERS` / `DEMO_GALLERY_IMAGES` / `DEMO_ARTICLE_IMAGES`（`tests/apply-template.test.ts` 钉住与 setup.yml 的同步） | 按名删除而非通配——`public/images/articles/` 正是内容规范让你放**自己**内文图的地方，你的图绝不会被误删 |
 | demo 站验证文件 | `public/` 根目录下 demo 站自己的搜索引擎验证 token（如 `google8362d9398114b66b.html`，清单 `DEMO_PUBLIC_FILES`） | 这是上游 demo 站域名的运维 token；你验证**自己的**站点时 GSC 会生成不同的随机文件名，按精确文件名删除绝不会误删你自己的验证文件 |
 | demo Adsterra 单元页 | `public/ads/*.html` 中模板自带的 6 个 demo 单元 | **按内容里的 demo unit key 判定，不再只看文件名**；如果你已经把同名文件换成自己的 Adsterra snippet，重跑 `apply-template` / Initialize workflow 会保留它们 |
-| 项目官网 | `src/components/landing/`、`src/config/landing*.ts`（v2.31.1 起为门面 landing.ts + types/shared/en/zh 四模块）、`src/pages/landing*`（含站内文档中心 /landing/docs）、`src/pages/zh/landing*`（中文官网）、`public/images/showcase/`、`public/images/wechat-qr.jpg`、`public/_redirects`（手册旧 slug 与 locale 入口 301 重定向，只有 demo 的 /landing/docs 与 /zh/landing 路由用得到） | fork 站不需要 AnvilWiki 项目自述页；`docs/handbook/` **markdown 源保留**当参考文档，只删路由 |
-| 官网回链 | `src/config/project.ts` 的 `landingLinkEnabled` 翻为 `false` | 页面 header 的"返回官网"按钮随删随关 |
-| demo 凭据 | `wrangler.toml` `[vars]` 重写：`SITE_URL` 换成你的域名，仍是 demo 占位的 Giscus/Sponsor/CF Analytics/旧式 IndexNow env 键清空，AdSense/Adsterra 等可选槽留注释位。**重跑安全（value-aware）**：你已手改的值会被识别并原样保留（解析兼容行尾内联注释、单引号/双引号字面量与裸标量——`KEY = 42` 这类数字/布尔按字面保留、重写为双引号字符串），只有未改动的 demo 占位才重置 | 不重置的话，你站的评论区/统计等会继续指向 demo 配置 |
+| demo 凭据 | `wrangler.toml` `[vars]` 重写：`SITE_URL` 换成你的域名，仍是 demo 占位的 Giscus/Sponsor/CF Analytics/旧式 IndexNow env 键清空，Adsterra 等可选槽留注释位。**重跑安全（value-aware）**：你已手改的值会被识别并原样保留（解析兼容行尾内联注释、单引号/双引号字面量与裸标量——`KEY = 42` 这类数字/布尔按字面保留、重写为双引号字符串），只有未改动的 demo 占位才重置 | 不重置的话，你站的评论区/统计等会继续指向 demo 配置 |
 | IndexNow 站点 key | 仓库根 `.indexnow-key` | 首次真实运行自动生成 64 位十六进制 key；重跑原样复用。key 按 IndexNow 协议本来就会公开为 `/<key>.txt`，不是 secret；build 和自动提交共同读取它，免 Cloudflare/GitHub 双份环境变量配置 |
 | demo 作者 | `src/config/authors.ts` 里 `// DEMO` 标记的作者条目 | 否则 Person JSON-LD 会引用虚构作者 |
 
-**保留不删（有意设计）**：favicon/hero 图等二进制资产（CLI 生成不了，脚手架下一步指引你手动换）；`docs/handbook/` 手册源码。
+**保留不删（有意设计）**：favicon/hero 图等二进制资产（CLI 生成不了，脚手架下一步指引你手动换）。
 
 **⚠️ 语言 JSON 分三类处理（重跑安全，按内容判定不只按文件名）**：未选择的语言里——① **demo 自带且仍是 demo 内容的**（`ja.json` 等，`site.name` 仍是 demo 站名）会被**直接删除**：它们装载着完整的 demo 游戏翻译，留着是身份泄漏，且 `pnpm check-config` 会对「locale 文件存在但不在 routing.ts」报错，fork 第一天 CI 就是红的；② **demo 文件名但内容已换成你游戏的**（比如上一轮运行选了 ja、这一轮没选）——内容判定发现 `site.name` 已不是 demo 站名，**只警告、绝不删除**；③ **你自己创建的** locale 文件（`pnpm new-locale` 加的等）同样**只警告、绝不删除**——重跑不能毁掉你的翻译工作。②③ 看到「Kept N locale file(s)」警告后自行决定删除或把该语言加进所选列表，处理前 `pnpm check-config` 会一直是红的。
 
-**逃生口**：`pnpm apply-template --dry-run`（只打印不写入）、`--no-clear-content`（保留 demo 文章）、`--keep-landing`（保留项目官网）、`--answers answers.json`（非交互模式，复制第二个站/CI 时用）、`--lang zh` 或 `--lang en`（界面语言；交互 TTY 会先问一句可跳过，非交互通道缺省英文）。
+**逃生口**：`pnpm apply-template --dry-run`（只打印不写入）、`--no-clear-content`（保留 demo 文章）、`--answers answers.json`（非交互模式，复制第二个站/CI 时用）、`--lang zh` 或 `--lang en`（界面语言；交互 TTY 会先问一句可跳过，非交互通道缺省英文）。
 
 **事后体检**：`pnpm template-audit`——四层扫描（代码层无 demo 字符串 / 配置层是否还挂 demo 域名 / 内容层残留 / 换皮遗留文件），fork 站上线前跑一次确认没有"Anvil Quest"残留。
 
@@ -302,7 +300,7 @@ tags: ["boss", "guide"]
 
 ## 模板化进阶：audit + 沉淀
 
-第一个站跑通之后，别急着直接复制仓库做第二个游戏——先花 15 分钟做两件事（完整讲法见学习手册课 26「复制第二个站」）：
+第一个站跑通之后，别急着直接复制仓库做第二个游戏——先花 15 分钟做两件事：
 
 **1. 跑模板健康检查**：
 
@@ -312,9 +310,9 @@ pnpm template-audit
 
 它会从三层分离的角度打分（如「模板健康度：8/10」）：代码层有没有混进游戏专属字符串（❌ 必须修——那是框架层的违约）、配置层还绑着旧游戏多少、内容层有没有 draft 遗留、demo 图片资产和 `wrangler.toml` demo 值清干净没有。❌ 清零、⚠️ 逐条决定去留之后，这个仓库才是一个干净的模板。
 
-**2. 沉淀换皮清单**：把「复制新站时必改哪些文件、必换哪些目录」写成 `docs/rebrand-checklist.md`（课 26 有一段现成提示词可以生成初稿）。半年后复制第五个站时，照单执行，不用回忆任何细节。
+**2. 沉淀换皮清单**：把「复制新站时必改哪些文件、必换哪些目录」写成 `docs/rebrand-checklist.md`。半年后复制第五个站时，照单执行，不用回忆任何细节。
 
-之后每复制一个新站就是标准四步：复制仓库 → `pnpm apply-template` → 换内容层 → `pnpm build` 验证。批量铺内页见 `pnpm bulk-new-posts`（学习手册课 27「批量做内页」）。
+之后每复制一个新站就是标准四步：复制仓库 → `pnpm apply-template` → 换内容层 → `pnpm build` 验证。批量铺内页见 `pnpm bulk-new-posts`。
 
 ---
 

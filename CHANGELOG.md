@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- **本仓库自用结构裁剪批（移除项目官网 + 站内手册 + AdSense/同意横幅；demo 数据不动）**：从「上游模板全量」变为「按个人需求裁剪过的模板」，分两个提交落地，八道门禁全程绿（commit 8213ecf + 59c46e7）。
+  - **项目官网层整体删除**：`src/components/landing/`（18 文件）、`src/config/landing*.ts`（6 文件）、`src/pages/landing*` + `src/pages/zh/landing*`（15 文件）、`public/images/showcase/sites/`（9 张社群站截图）、`public/images/wechat-qr.jpg`、`public/_redirects`。`PROJECT_VERSION` 从被删的 `landing-shared.ts` 迁入 `src/config/project.ts`（`tests/changelog.test.ts` 的版本钉随之改址，`docs/development.md` 版本五处同步）；`public/images/showcase/` 保留 4 张 demo 截图（README 展示图仍在引用）。
+  - **站内手册整体删除**：`docs/handbook/`（82 篇）、`src/lib/handbook.ts`、`src/content.config.ts` 的 `handbook` collection、`astro.config.ts` 手册 lastmod 段、`src/pages/llms.txt.ts` 的 Handbook/Project pages 段。仓库参考文档 `docs/*.md` 17 篇保留。
+  - **`apply-template` 砍掉「删除官网页」整步**：`LANDING_PATHS` / `removeLandingPage()` / `SkinInput.clearLanding` / `--keep-landing` 全部移除，交互问答 **18 → 17 问**（`scripts/lib/apply-template-i18n.ts` 中英词典同步删 6 键）；`.github/workflows/setup.yml` 的 landing 步骤与 `landingLinkEnabled` 翻转守卫删除，PR body / 提交信息改写。**E2E 答案文件与 `tests/apply-template.test.ts` 已按 17 问对齐。**
+  - **Google AdSense 与 cookie 同意横幅整体删除**：`AdSenseSlot` / `InContentAd` / `StickyBanner` / `SidebarAd` / `CookieConsent` 五个组件 + `tests/consent.test.ts`；`BaseLayout` 的 `adsenseClient` 与 `consent` prop 移除，GA4 改为**直接注入**（不再经 `__awLoadTrackers` 门控）；`AdsterraSlot` / `MobileAnchorAd` 去掉同意延迟（`data-src` → `src`，关闭记忆保留）；`PUBLIC_ADSENSE_*` 从 `.env.example` / `wrangler.toml` / `apply-rewrites.ts`（`WRANGLER_VARS_TEMPLATE`）/ `setup.yml`（heredoc + `TEMPLATE_KEYS`）四处清空；`shared.consentText/consentTitle/accept/decline` 四键从 en/ja 词典删除；`LegalContent` 隐私披露与 `docs/ads.md` 三节同步改写。
+  - **⚠️ 合规取舍**：横幅删除后 GA4 与 Adsterra 均无门控直接加载，欧盟流量有 GDPR 风险。原组件可取回：`git show c566440:src/components/layout/CookieConsent.astro`（c566440 = 重构前基线提交）；恢复步骤记在 `docs/ads.md` 与 AGENTS.md Ads 段。
+  - **测试套件 24 → 19**：删 `consent` / `handbook` / `landing-paths` / `redirects` / `community-digest` 五套；AGENTS.md 命令表清单与计数同步（`tests/agents-consistency.test.ts` 钉死）。`check-links` 内链 11,848 → 2,289（84 页），`typecheck` 158 → 148 文件，全绿。
+  - 遗留未清（有意，非遗漏）：`.agent/skills/anvil-adsense-audit`（AdSense 申请前审计技能）保留——不影响构建，将来若加回 AdSense 仍可用；不要就 `git rm -r .agent/skills/anvil-adsense-audit`，并同步 AGENTS.md 技能段、README 中英技能表、`docs/README.md` 技能计数、`docs/PRD.md` 架构树四处引用。
+
 ### Fixed
 
 - **第 45 轮 24h 审计深挖修复（社群日报 faq 跨期复制缺陷复发——10-12 期）**：#85（8109ef1）的 2026-10-12 期 report 又写入「大家都用同一个模板会被 Google 判定为低质吗 ×2」，与 2026-10-10 期逐字重复（同 pattern 同 count）——正是第 44 轮刚从 10-11 期清掉的跨期复制缺陷复发（复制源换成 10-10 期）。10-12 当天 day 文件（213 行）全量扫描：「低质/Google/同一个模板」零命中，「模板」仅 2 处（20:47 光影「别开源模板了」反话梗+20:55「沉淀成模板」沉淀论），均非该提问，count=2 无任何当日事实锚。10-12 期 faq 改空数组（10-09/10-11 先例合法）；其余条目全部逐字指认 day 文件成功：quotes×2（20:53 赛道论+20:54-55 反百站论）、qa（20:50 王圈圈 Spaceship 转圈）、topics×2（20:59-21:13 聚合站/权重窗口+20:42-43 数据复盘窗口）、takeaways×4（CF 爬虫 20:56-57、域名军备 20:48 煎蛋 30 个/章鱼 76 个）；stats 三方对账全过：207 条==213 行−6 系统事件（隐私提醒 ×1+邀请 sysmsg ×2+撤回 ×3，§7.1 口径）、speakers 23 人去重逐一点名（袁 53/小黑龙 30/章鱼 29/煎蛋 28/光影 26/谢花林 14）、peakHour 20:00-21:00=20 档 146 条全天峰值、summary 括号 207==stats.messages——stats 缺陷连续两期未复发。机械门禁维持有意不加（同 pattern 多期出现可为合法重复，day 文件 gitignored 仓内无第二事实源，与 42/44 轮同构）；根治面在仓外管道 prompt（faq 须当日 day 文件可指认才可写入），依赖审计发布窗口内抽查。test 398（community-digest 契约 10/10 复跑绿）。观察项：管道 PR #85 body 自报当夜 force_sync 瞬时报「缺少密钥或 db_storage」后 fetch 侧自愈（微信 MCP 探测竞态，数据完整覆盖至 22:58），留观勿干预。

@@ -1,13 +1,23 @@
 # 广告变现:什么时候接、怎么接、钱怎么收
 
-> 模板广告位的**接入操作**(AdSense 4 个环境变量、Cloudflare 里填哪里)见站内[学习手册 · 课 22「开广告:时机与接入」](https://anvil.wiki/zh/landing/docs/enable-ads)和 [deployment.md 环境变量清单](deployment.md#环境变量清单)。
-> 本文解决剩下的四个实战问题:**什么时候把广告打开**(时机错了会掉排名)、**AdSense 的钱怎么进国内银行卡**(三道验证 + 电汇)、**Adsterra 怎么从注册接到上线**(格式取舍 + 与 AdSense 共存的红线)、**广告平台怎么随流量升级**(起步/进阶/成熟三档 + 游戏垂直网络)。
+> 🚨 **本 fork 的现状**:已移除 Google AdSense 与 cookie 同意横幅,只保留 Adsterra。下面的「AdSense 收款」「申请前体检」「与 AdSense 共存红线」三节作为**参考**保留(将来让 AdSense 回来时仍然适用),但模板里已经没有对应组件与 env。
+> 广告位的接入操作见第三节;环境变量清单见 [deployment.md](deployment.md#环境变量清单)。站内手册路由(`/landing/docs`)已随官网营销页一并删除。
 
 ## 你的广告开关在哪(30 秒背景)
 
-模板内置 3 个广告位(Sticky 粘底 / Sidebar 侧栏 / InContent 文中),由 `PUBLIC_ADSENSE_CLIENT` + 3 个 slot 环境变量控制,**留空 = 不渲染,默认全关**。这个"默认关"正是为下面的时机策略设计的——站可以先干净上线,时机到了再填变量打开。
+模板内置 Adsterra 广告位,由 `PUBLIC_ADSTERRA_SLOT_<NAME>` 环境变量**逐个**控制,**留空 = 不渲染,默认全关**。这个"默认关"正是为下面的时机策略设计的——站可以先干净上线,时机到了再填变量打开。
 
-AdSense 之外的常用备选是 Adsterra(审核快、零流量门槛),它的广告单元是一段独立脚本,在你自己的 fork 里粘到对应位置即可——具体粘哪、怎么和模板 3 个 AdSense 位共存,见本文第三节。
+当前挂载点:
+
+| 环境变量 | 位置 |
+|---|---|
+| `PUBLIC_ADSTERRA_SLOT_INCONTENT_728X90` + `..._NATIVE_BANNER` | 文章页 `AdsterraSlotPair`(728×90 在前,响应式 native 在文末) |
+| `PUBLIC_ADSTERRA_SLOT_STICKY_320X50` | 文章页移动端底部锚位 `MobileAnchorAd`(可一键关闭、零 CLS) |
+| `PUBLIC_ADSTERRA_SLOT_SIDEBAR_300X250` | 文章侧栏 `WikiSidebar`(非 compact 时) |
+
+> `SIDEBAR_160X300` / `SIDEBAR_160X600` 原先只挂在已删除的站内手册页,现在**没有挂载点**——留着可自挂,不挂也无副作用。
+
+⚠️ **本 fork 没有 cookie 同意横幅**:Adsterra 与 GA4 都直接加载,不做同意门控。代价是欧盟流量存在 GDPR 风险。要恢复合规门控:`git show c566440:src/components/layout/CookieConsent.astro` 可取回原组件(c566440 = 本次重构前的基线提交),同时在 AdsterraSlot 里把 `src` 改回 `data-src` 延迟加载。
 
 ---
 
@@ -31,6 +41,8 @@ AdSense 之外的常用备选是 Adsterra(审核快、零流量门槛),它的广
 
 ### 申请 AdSense 前的体检:22 项 AD-\* 清单
 
+> ⚠️ 本 fork 已移除 AdSense 集成。以下清单只在「将来想让 AdSense 回来」时适用;当前站点无需跑这一项。
+
 上面那份自查清单管的是「什么时候开广告」;**交 AdSense 申请之前**,还有一道更前置的体检:「我这个站现在交上去,是过、是拒、还是白交」。逐项四态判定(Pass / Fail / Unknown / N-A),按 Blocker / High / Medium 分级,Blocker 未清零别提交——**被拒记录跟着 AdSense 账户走,别拿站点去试错**。
 
 清单归 `/anvil-adsense-audit` 技能维护(支持技能的 AI 助手输入斜杠命令即可跑全项,模板已解决的项会自动给证据),这里只放速查版:
@@ -49,6 +61,8 @@ AdSense 之外的常用备选是 Adsterra(审核快、零流量门槛),它的广
 ---
 
 ## 二、AdSense:让钱真正进你的银行卡
+
+> ⚠️ 本 fork 已移除 AdSense(组件与 env 都没了)。本节是**账户侧收款流程**的参考,与模板代码无关;将来接上 AdSense 时照做即可。
 
 AdSense 审核通过、广告上线,后台开始积累余额——但从"后台有余额"到"钱进你的国内银行卡",中间还隔着**三道有周期的验证 + 一个收款方式**。最常见的翻车剧本:攒到 $100 才发现 PIN 没验证,付款挂起,白白多等一个月。
 
@@ -128,6 +142,8 @@ Adsterra 是 AdSense 之外最常用的备选:**零流量门槛、审核分钟�
 新手公式:**一两个 Banner + 一个 Direct Link 起步**,收入曲线稳了再考虑加格式。Adsterra 官方博客推荐的"多 banner + Social Bar + Popunder"是追求极限收入的配置,以牺牲体验为代价——游戏攻略站靠 Google 排名吃饭,别学。
 
 ### ⚠️ 与 AdSense 共存的红线(必读)
+
+> 本 fork 只挂 Adsterra、暂无 AdSense,所以下面几条当前不适用。保留有两个理由:Adsterra 的 Popunder 格式本身就伤体验;将来若加回 AdSense,这就是硬红线。
 
 Google 的[广告投放位置政策](https://support.google.com/adsense/answer/1346295?hl=zh-Hans)明确:**挂着 AdSense 的站,不允许触发 popunder(背后弹页)——哪怕弹出的页面里没有 Google 广告也算违规**。轻则停广告展示,重则封 AdSense 账号。所以:
 

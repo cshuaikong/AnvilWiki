@@ -146,7 +146,7 @@ const en = {
   nextIcons5: '           android-chrome-192x192.png, android-chrome-512x512.png.',
   nextIcons6: '           Same for the homepage hero image: public/images/hero.webp / hero.svg.',
   nextIcons7:
-    '           (CLI cannot generate binary assets — see the learning manual, lesson 11 "rebrand-your-site", or run pnpm gen-assets.)',
+    '           (CLI cannot generate binary assets — run pnpm gen-assets, or replace them by hand.)',
   nextHome: '   • Fill homepage modules in src/locales/<locale>.json',
   nextHomeDetail: '           (home.hero / start / explore / faq / updates).',
   nextArticles: '   • Add article MDX under src/content/wiki/<locale>/<category>/.',
@@ -268,7 +268,7 @@ const zh: CliStrings = {
   nextIcons4: '           favicon-16x16.png、favicon-32x32.png、apple-touch-icon.png、',
   nextIcons5: '           android-chrome-192x192.png、android-chrome-512x512.png。',
   nextIcons6: '           首页大图同理:public/images/hero.webp / hero.svg。',
-  nextIcons7: '           (CLI 生成不了图片资产 — 见学习手册第 11 课「换成你的游戏」,或直接跑 pnpm gen-assets)',
+  nextIcons7: '           (CLI 生成不了图片资产 — 直接跑 pnpm gen-assets,或手动替换)',
   nextHome: '   • 填首页文案:src/locales/<语言>.json',
   nextHomeDetail: '           (home.hero / start / explore / faq / updates)。',
   nextArticles: '   • 在 src/content/wiki/<语言>/<栏目>/ 下写文章 MDX。',
