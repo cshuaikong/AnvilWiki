@@ -237,17 +237,26 @@ echo '{}' > src/locales/ru.json
 
 **目录**：`public/`
 
-| 文件 | 说明 |
+| 文件 | 状态 |
 |---|---|
-| `favicon.ico` / `favicon-16x16.png` / `favicon-32x32.png` | 浏览器标签图标 |
-| `apple-touch-icon.png` | iOS 主屏图标（180×180） |
-| `android-chrome-192x192.png` / `android-chrome-512x512.png` | Android 主屏图标 |
-| `manifest.json` | PWA manifest（改 `name` / `short_name`） |
-| `images/hero.webp` | Hero 图（模板自带可能是占位，必须换成真实图） |
+| `favicon.svg` / `favicon-16x16.png` / `favicon-32x32.png` | ⚠️ **本仓库不含** —— 见下方 |
+| `apple-touch-icon.png`（180×180） | ⚠️ **本仓库不含** |
+| `android-chrome-192x192.png` / `android-chrome-512x512.png` | ⚠️ **本仓库不含** |
+| `favicon.ico` | ⚠️ **本仓库不含**，且 `gen-assets` 不生成（sharp 写不了 ICO） |
+| `manifest.json` | 存在（`name` / `short_name` / `theme_color` 会被 CLI 与 `gen-assets` 改写） |
+| `images/hero.webp` | Hero 图，由 `gen-assets` 生成 |
 
-**Hero 图**：模板自带的可能是占位文件。换成你的真实 Hero 图，格式推荐 WebP（体积最小）。如果你拿到的是 PNG/JPG，用任何工具转成 WebP 后覆盖。
+**🚨 favicon 全套刻意不随仓库分发**：避免你的站上线后顶着别人的品牌标记（模板自带的是一枚 AnvilWiki 橙底白字「A」）。代码里的三处接线**都已就位**——`<link rel="icon">`（BaseLayout）、`manifest.json` 的 `icons`、Organization JSON-LD 的 `logo`——文件备齐后自动生效。
 
-**favicon / Hero 图生成**：模板自带 `pnpm gen-assets`——按你的主题色自动生成 favicon 全套（svg + 各尺寸 png）和首页大图 hero.webp（1200×630），直接覆盖 `public/` 里的同名文件，无需再手动去 [favicon.io](https://favicon.io/favicon-converter/)。想要自定义图案的仍然可以手动替换。
+生成一条命令：
+
+```bash
+pnpm gen-assets
+```
+
+按 `src/styles/globals.css` 的当前主题色 + `site.game.name` 首字母，写出 `favicon.svg` + 5 张 PNG + `hero.webp`（1200×630）。缓存命中会跳过，但**输出文件缺失即强制重生成**（不会因为缓存而留下空洞）。想要自定义图案就按同名文件丢进 `public/` 覆盖。
+
+⚠️ 在生成之前，浏览器与爬虫对这些路径的请求会静默 404（`check-links` 只审计页面链接，不看资源扩展名）。
 
 ---
 

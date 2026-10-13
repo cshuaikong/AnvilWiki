@@ -140,14 +140,33 @@ async function main() {
   }
   const cacheKey = (name: string, ...inputs: string[]) =>
     stableHash(`${MANIFEST_VERSION}|${name}|${inputs.join('|')}`);
-  const fresh = (name: string, hash: string) => FORCE || manifest[name] !== hash;
+  /**
+   * A cached group is only skippable when its OUTPUT FILES still exist. The
+   * input hash alone is not enough: delete `public/favicon.svg` by hand (or
+   * check the repo out without the binaries — the template intentionally
+   * ships no favicon set) and the hash is unchanged, so a hash-only test
+   * reports "fresh", skips the write, and the file stays missing forever.
+   * No gate catches that: check-links skips asset extensions.
+   */
+  const outputsExist = (files: string[]) => files.every((f) => existsSync(join(PUBLIC, f)));
+  const fresh = (name: string, hash: string, outputs: string[]) =>
+    FORCE || manifest[name] !== hash || !outputsExist(outputs);
+
+  /** PNG favicon outputs — one 512 render, sharp-resized per size. */
+  const PNG_FAVICONS: Array<[string, number]> = [
+    ['favicon-16x16.png', 16],
+    ['favicon-32x32.png', 32],
+    ['apple-touch-icon.png', 180],
+    ['android-chrome-192x192.png', 192],
+    ['android-chrome-512x512.png', 512],
+  ];
 
   console.log(`\n🎨 gen-assets — brand ${brandHex}, initial "${initial}"\n`);
 
   // 1. favicon.svg — handwritten SVG (browser renders the <text> with its own
   //    system fonts; no font embedding needed at this size).
   const svgHash = cacheKey('favicon.svg', brandHex, initial);
-  if (fresh('favicon.svg', svgHash)) {
+  if (fresh('favicon.svg', svgHash, ['favicon.svg'])) {
     writeFileSync(
       join(PUBLIC, 'favicon.svg'),
       `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="${brandHex}"/><text x="32" y="43" font-family="system-ui, -apple-system, 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif" font-size="34" font-weight="700" fill="${ink}" text-anchor="middle">${escapeXmlText(initial)}</text></svg>\n`,
@@ -158,7 +177,7 @@ async function main() {
 
   // 2. PNG favicons — one 512px satori render, sharp-resized per size.
   const pngHash = cacheKey('favicon-png', brandHex, initial);
-  if (fresh('favicon-png', pngHash)) {
+  if (fresh('favicon-png', pngHash, PNG_FAVICONS.map(([n]) => n))) {
     const fonts = await fontsFor(initial);
     const png512 = await renderPng(
       {
@@ -183,14 +202,7 @@ async function main() {
       512,
       fonts,
     );
-    const sizes: Array<[string, number]> = [
-      ['favicon-16x16.png', 16],
-      ['favicon-32x32.png', 32],
-      ['apple-touch-icon.png', 180],
-      ['android-chrome-192x192.png', 192],
-      ['android-chrome-512x512.png', 512],
-    ];
-    for (const [name, size] of sizes) {
+    for (const [name, size] of PNG_FAVICONS) {
       const buf =
         size === 512 ? png512 : await sharp(png512).resize(size, size, { fit: 'contain' }).png().toBuffer();
       writeFileSync(join(PUBLIC, name), buf);
@@ -201,7 +213,7 @@ async function main() {
 
   // 3. hero.webp — 1200×630 brand gradient + site name (the default og:image).
   const heroHash = cacheKey('hero.webp', brandHex, brandDeep, heroTitle);
-  if (fresh('hero.webp', heroHash)) {
+  if (fresh('hero.webp', heroHash, ['images/hero.webp'])) {
     const fonts = await fontsFor(heroTitle + gameName);
     const png = await renderPng(
       {
@@ -256,13 +268,34 @@ async function main() {
     console.log('  ✅ public/images/hero.webp (1200×630)');
   }
 
-  // 4. manifest.json theme_color — keep the PWA color glued to the live brand.
+  // 4. manifest.json — keep theme_color glued to the live brand AND restore the
+  //    `icons` entries. The template ships no favicon set (see the BaseLayout
+  //    comment), so manifest.json legitimately starts WITHOUT an `icons` array;
+  //    this step adds it back the moment the PNGs exist, which makes the
+  //    "drop the dangling reference now, generate later" contract self-healing
+  //    instead of asking for a hand edit.
   const manifestJsonPath = join(PUBLIC, 'manifest.json');
   const manifestJson = JSON.parse(readFileSync(manifestJsonPath, 'utf8'));
+  const WANTED_ICONS = [
+    { src: '/android-chrome-192x192.png', sizes: '192x192', type: 'image/png' },
+    { src: '/android-chrome-512x512.png', sizes: '512x512', type: 'image/png' },
+  ];
+  let manifestChanged = false;
   if ((manifestJson.theme_color ?? '').toLowerCase() !== brandHex.toLowerCase()) {
     manifestJson.theme_color = brandHex;
-    writeFileSync(manifestJsonPath, JSON.stringify(manifestJson, null, 2) + '\n');
+    manifestChanged = true;
     console.log(`  ✅ public/manifest.json theme_color → ${brandHex}`);
+  }
+  if (
+    (!Array.isArray(manifestJson.icons) || manifestJson.icons.length === 0) &&
+    outputsExist(WANTED_ICONS.map((i) => i.src.replace(/^\//, '')))
+  ) {
+    manifestJson.icons = WANTED_ICONS;
+    manifestChanged = true;
+    console.log('  ✅ public/manifest.json icons (192 + 512)');
+  }
+  if (manifestChanged) {
+    writeFileSync(manifestJsonPath, JSON.stringify(manifestJson, null, 2) + '\n');
   }
 
   // Atomic replace (sibling temp + rename): a crash mid-write must never

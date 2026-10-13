@@ -116,10 +116,14 @@ const gscVerification = import.meta.env.PUBLIC_GSC_VERIFICATION as string | unde
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    {/* pnpm gen-assets regenerates these in place with the live brand color.
-        SVG first (sharp modern browsers), 32px PNG fallback; the legacy
-        favicon.ico stays in public/ but is never referenced (sharp can't
-        emit ICO — see scripts/gen-assets.ts). */}
+    {/* This repo ships NO favicon set on purpose: public/favicon*,
+        apple-touch-icon.png and android-chrome-*.png are absent so nobody
+        deploys another project's brand mark. The wiring below is kept intact —
+        run `pnpm gen-assets` once and it writes the whole set from the live
+        theme colour, after which these tags resolve. Until then the requests
+        404 silently (check-links skips asset extensions). favicon.ico is never
+        emitted (sharp cannot write ICO); the browser's default /favicon.ico
+        probe 404s, which is invisible. */}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />

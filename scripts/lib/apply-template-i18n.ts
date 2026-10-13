@@ -136,15 +136,15 @@ const en = {
     `   📄 Created ${n} scaffold article${n === 1 ? '' : 's'} (one per category, en/)`,
 
   nextStepsHeader: '📌 Remaining tasks (see docs/apply-template.md):',
-  nextIcons1: '   • Replace the icon set — your site still shows the demo anvil icons.',
+  nextIcons1: '   • Generate your icon set — this repo ships none (no borrowed brand marks).',
   nextIcons2:
-    '           Generate a full set from one image at https://favicon.io/favicon-converter/,',
+    '           Run `pnpm gen-assets`: it writes favicon.svg, favicon-16x16/32x32.png,',
   nextIcons3:
-    '           then drag the files into public/ overwriting: favicon.ico, favicon.svg,',
+    '           apple-touch-icon.png and android-chrome-192x192/512x512.png from your theme',
   nextIcons4:
-    '           favicon-16x16.png, favicon-32x32.png, apple-touch-icon.png,',
-  nextIcons5: '           android-chrome-192x192.png, android-chrome-512x512.png.',
-  nextIcons6: '           Same for the homepage hero image: public/images/hero.webp / hero.svg.',
+    '           colour, and the <link> / manifest / JSON-LD wiring in the code starts resolving.',
+  nextIcons5: '           Want a custom mark? Drop your own files into public/ under the same names.',
+  nextIcons6: '           hero.webp (the 1200×630 og:image) comes from the same command.',
   nextIcons7:
     '           (CLI cannot generate binary assets — run pnpm gen-assets, or replace them by hand.)',
   nextHome: '   • Fill homepage modules in src/locales/<locale>.json',
@@ -262,12 +262,12 @@ const zh: CliStrings = {
   scaffoldCreated: (n) => `   📄 已创建 ${n} 篇脚手架文章(每个所选栏目一篇,en/)`,
 
   nextStepsHeader: '📌 剩余任务(详见 docs/apply-template.md):',
-  nextIcons1: '   • 换图标 — 你的站现在还是模板的铁砧图标。',
-  nextIcons2: '           可在 https://favicon.io/favicon-converter/ 用一张图生成全套,',
-  nextIcons3: '           然后把文件拖进 public/ 覆盖同名文件:favicon.ico、favicon.svg、',
-  nextIcons4: '           favicon-16x16.png、favicon-32x32.png、apple-touch-icon.png、',
-  nextIcons5: '           android-chrome-192x192.png、android-chrome-512x512.png。',
-  nextIcons6: '           首页大图同理:public/images/hero.webp / hero.svg。',
+  nextIcons1: '   • 生成你自己的图标 — 本仓库不带图标(不夹带别人的品牌标记)。',
+  nextIcons2: '           跑 `pnpm gen-assets`:它会用你的主题色写出 favicon.svg、',
+  nextIcons3: '           favicon-16x16/32x32.png、apple-touch-icon.png 与',
+  nextIcons4: '           android-chrome-192x192/512x512.png,代码里的 <link> / manifest /',
+  nextIcons5: '           JSON-LD 接线随之自动生效。要自定义图案,按同名文件丢进 public/ 覆盖即可。',
+  nextIcons6: '           hero.webp(1200×630 og:image)同一条命令生成。',
   nextIcons7: '           (CLI 生成不了图片资产 — 直接跑 pnpm gen-assets,或手动替换)',
   nextHome: '   • 填首页文案:src/locales/<语言>.json',
   nextHomeDetail: '           (home.hero / start / explore / faq / updates)。',

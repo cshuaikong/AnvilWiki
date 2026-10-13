@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import {
   organizationJsonLd,
@@ -26,7 +26,18 @@ describe('SEO helpers', () => {
       expect(json['@context']).toBe('https://schema.org');
       expect(typeof json.name).toBe('string');
       expect(json.url).toMatch(/^https?:\/\//);
-      expect(json.logo).toMatch(/\.png$/);
+      // `logo` is declared only while public/android-chrome-512x512.png exists
+      // (this repo ships no favicon set — see src/lib/seo.ts). Both states are
+      // legal; a declared logo must point at the real PNG, and an absent one
+      // must stay absent rather than dangle.
+      const logoOnDisk = existsSync(
+        fileURLToPath(new URL('../public/android-chrome-512x512.png', import.meta.url)),
+      );
+      if (logoOnDisk) {
+        expect(json.logo).toMatch(/\.png$/);
+      } else {
+        expect(json.logo).toBeUndefined();
+      }
     });
   });
 

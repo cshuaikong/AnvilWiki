@@ -5,10 +5,22 @@
  * Absolute URLs are produced via siteUrl + lib/url helpers.
  */
 
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { siteUrl } from '~/config/site';
 import { site } from '~/config/site';
 import { defaultLocale, type Locale } from '~/i18n/routing';
 import { detailPath, homeUrl, listPath } from './url';
+
+/**
+ * The Organization `logo` may only be declared when the file EXISTS. This repo
+ * ships no favicon set on purpose (see the BaseLayout favicon comment), so
+ * before the first `pnpm gen-assets` the honest answer is "no logo": a
+ * dangling URL is worse than none — Google reads it as a broken asset.
+ * `gen-assets` writes android-chrome-512x512.png and the property reappears
+ * with no code change.
+ */
+const HAS_ORG_LOGO = existsSync(resolve('public/android-chrome-512x512.png'));
 
 /** Organization JSON-LD — injected globally in BaseLayout. */
 export function organizationJsonLd() {
@@ -17,7 +29,7 @@ export function organizationJsonLd() {
     '@type': 'Organization',
     name: site.name,
     url: siteUrl,
-    logo: `${siteUrl}/android-chrome-512x512.png`,
+    ...(HAS_ORG_LOGO ? { logo: `${siteUrl}/android-chrome-512x512.png` } : {}),
     image: `${siteUrl}/images/hero.webp`,
     description: site.description,
     // Entity association: link the wiki to the game's canonical pages
