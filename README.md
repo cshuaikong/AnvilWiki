@@ -166,13 +166,7 @@ fork 后用 ZCode / Claude Code / Codex / Cursor 打开仓库,直接对话即可
 
 提 PR 在 `src/config/landing.ts` 的 `COMMUNITY_SITES` 追加一条即可——官网([/landing](https://anvil.wiki/landing) 与 [/zh/landing](https://anvil.wiki/zh/landing))的「Built with AnvilWiki」区块会自动展示。
 
-### 交流群 / 技术栈 / 许可
-
-微信扫码添加主理人好友,拉你进群交流讨论(部署问题、功能建议、游戏内容站经验都欢迎;[项目官网](https://anvil.wiki/zh/landing)右下角也有同款悬浮扫码按钮):
-
-<p align="center">
-  <img src="public/images/wechat-qr.jpg" width="200" alt="微信二维码——扫码添加好友进群交流" />
-</p>
+### 技术栈 / 许可
 
 技术栈:Astro 7(静态输出)+ Tailwind CSS 3 + MDX 8 + astro-icon/lucide + Content Layer API(Zod)+ Pagefind 搜索 + pnpm 11 / Node 22。
 
@@ -309,12 +303,6 @@ Built a site? Open a PR appending an entry to `COMMUNITY_SITES` in `src/config/l
 MIT License — see [LICENSE](LICENSE).
 
 Credits: the opportunity-scoring framework in [docs/sourcing.md](docs/sourcing.md) (section 4) draws on the game-opportunity skill from [yan-labs/yan-skills](https://github.com/yan-labs/yan-skills) (MIT); the AdSense pre-application audit skill (`/anvil-adsense-audit`) is inspired by the audit framework of [yantoumu/adsense-site-auditor-skill](https://github.com/yantoumu/adsense-site-auditor-skill) (our checklist is a template-specific rewrite, not a copy); the video-to-guide workflow (`anvil-new-article` Step 0) draws on the pipeline of [kennyzir/7deer_skills](https://github.com/kennyzir/7deer_skills/tree/main/youtube-content-gen) (MIT, youtube-content-gen). Thanks to all three projects for open-sourcing their methodology — and to [Shiyan](https://github.com/lyglzhl) (誓言, a community reviewer) whose external code review report (2026-09-15) directly drove the v2.27.0 fallback-SEO fix and the roadmap complexity candidates.
-
-Questions, ideas, or want to chat about game content sites? Scan the WeChat QR code to join the discussion group (the [project landing page](https://anvil.wiki/landing) has the same floating QR button in the bottom-right corner):
-
-<p align="center">
-  <img src="public/images/wechat-qr.jpg" width="200" alt="WeChat QR code — scan to join the discussion group" />
-</p>
 
 Tech stack: Astro 7 (static output) + Tailwind CSS 3 + MDX 8 + astro-icon/lucide + Content Layer API (Zod) + Pagefind search + pnpm 11 / Node 22.
 
