@@ -31,18 +31,3 @@ export type SharedStrings = Partial<SharedUi>;
 export function currentSharedStrings(currentLocale: string | undefined): SharedStrings {
   return currentLocale && isLocale(currentLocale) ? getUi(currentLocale).shared : {};
 }
-
-/**
- * Consent wiring shared by CookieConsent.astro (dispatches) and the
- * AdsterraSlot.astro + MobileAnchorAd.astro inline scripts (consume —
- * those scripts are untranspiled and cannot import, so they hardcode
- * these values). tests/consent.test.ts pins every duplicate to these
- * canonical exports — rename only together.
- *
- * - CONSENT_STORAGE_KEY: localStorage flag written by CookieConsent
- *   ('accepted' | 'declined').
- * - CONSENT_ACCEPTED_EVENT: document-level CustomEvent dispatched whenever
- *   consent becomes known-accepted (returning visitor or banner accept).
- */
-export const CONSENT_STORAGE_KEY = 'aw-cookie-consent';
-export const CONSENT_ACCEPTED_EVENT = 'aw:consent-accepted';

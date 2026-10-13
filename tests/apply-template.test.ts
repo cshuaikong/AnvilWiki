@@ -152,7 +152,7 @@ describe('rewriteWranglerVars is value-aware (a re-run must not wipe the user en
     'PUBLIC_GISCUS_CATEGORY_ID = "DIC_user"',
     'PUBLIC_GISCUS_MAPPING = "pathname"',
     'PUBLIC_CF_BEACON_TOKEN = "cf-beacon-user"',
-    '#PUBLIC_ADSENSE_CLIENT = ""',
+    '#PUBLIC_ADSTERRA_SLOT_SIDEBAR_300X250 = ""',
     '#PUBLIC_GA_ID = ""',
     '',
     '[env.production]',

@@ -918,18 +918,11 @@ const WRANGLER_VARS_TEMPLATE: VarSpec[] = [
   { key: 'PUBLIC_SPONSOR_IMAGE_URL' },
   { key: 'PUBLIC_CF_BEACON_TOKEN', comments: ['Cloudflare Web Analytics — blank = disabled.'] },
   {
-    key: 'PUBLIC_ADSENSE_CLIENT',
-    comments: ['Optional slots (empty = disabled) — fill HERE, not the dashboard:'],
-    commented: true,
-  },
-  { key: 'PUBLIC_ADSENSE_SLOT_STICKY', commented: true },
-  { key: 'PUBLIC_ADSENSE_SLOT_SIDEBAR', commented: true },
-  { key: 'PUBLIC_ADSENSE_SLOT_INCONTENT', commented: true },
-  {
     key: 'PUBLIC_ADSTERRA_SLOT_SIDEBAR_300X250',
     comments: [
-      'Adsterra — for each slot you enable, also create public/ads/<name>.html with',
-      'the snippet from the Adsterra dashboard (pattern: docs/ads.md 「广告位怎么挂」).',
+      'Adsterra (optional slots, empty = disabled) — for each slot you enable, also create',
+      'public/ads/<name>.html with the snippet from the Adsterra dashboard',
+      '(pattern: docs/ads.md 「广告位怎么挂」).',
     ],
     commented: true,
   },

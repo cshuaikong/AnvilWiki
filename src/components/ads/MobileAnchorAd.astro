@@ -2,39 +2,30 @@
 /**
  * MobileAnchorAd — Adsterra 320×50 bottom anchor, MOBILE ONLY (`md:hidden`).
  *
- * The template deliberately excludes a mobile TOP sticky (StickyBanner note:
- * a 320×50 strip under the header eats ~16% of a phone's first screen). The
- * BOTTOM anchor is the different animal — content scrolls over it instead of
- * being pushed down, so reading is never interrupted, and the anchor keeps
- * the three properties that make it acceptable:
+ * The template deliberately excludes a mobile TOP sticky (a 320×50 strip
+ * under the header eats ~16% of a phone's first screen). The BOTTOM anchor is
+ * the different animal — content scrolls over it instead of being pushed
+ * down, so reading is never interrupted, and the anchor keeps the two
+ * properties that make it acceptable:
  *
  *   1. Dismissible — × removes it and the choice persists in localStorage
- *      (same pattern as StickyBanner; storage-blocked browsers degrade to
- *      "dismiss works, just not remembered").
+ *      (storage-blocked browsers degrade to "dismiss works, just not
+ *      remembered").
  *   2. Zero CLS — `position: fixed` never shifts layout; on reveal a small
  *      bottom padding is added to <body> (mobile media query only) so the
  *      article's last block can't stay covered behind the bar.
- *   3. Consent-gated — the wrapped AdsterraSlot defers the iframe until
- *      consent (its own data-src mechanism), and THIS wrapper stays hidden
- *      until the same signal: declined or unchosen consent → neither ad nor
- *      empty bar ever appears.
  *
  * Gated on PUBLIC_ADSTERRA_SLOT_STICKY_320X50: empty = nothing rendered
- * (zero-ad fork contract). Mounted on article pages only (ArticlePage).
- * Storage/event names mirror src/lib/shared-ui.ts (inline scripts can't
- * import).
+ * (zero-ad contract). Mounted on article pages only (ArticlePage).
+ *
+ * No consent step: this fork removed the cookie banner, so the anchor reveals
+ * as soon as the script runs.
  */
 import { Icon } from 'astro-icon/components';
 import AdsterraSlot from './AdsterraSlot.astro';
 import { currentSharedStrings } from '~/lib/shared-ui';
 
 const show = !!import.meta.env.PUBLIC_ADSTERRA_SLOT_STICKY_320X50;
-// Same env condition under which BaseLayout renders CookieConsent — when
-// either is set the consent promise is live and the anchor must wait for it.
-const consentBannerActive = !!(
-  (import.meta.env.PUBLIC_GA_ID as string | undefined) ||
-  (import.meta.env.PUBLIC_ADSENSE_CLIENT as string | undefined)
-);
 const sharedStrings = currentSharedStrings(Astro.currentLocale);
 const closeAd = sharedStrings.closeAd ?? 'Close ad';
 // Astro hoists <style> tags out of JSX conditionals — a hoisted style would
@@ -86,7 +77,6 @@ const anchorCss = `
     <div
       id="mobile-anchor-ad"
       class="fixed inset-x-0 bottom-0 z-30 hidden border-t border-border bg-background/95 backdrop-blur md:hidden"
-      data-consent-deferred={consentBannerActive ? '1' : undefined}
     >
       <div class="relative mx-auto flex min-h-[58px] w-[320px] max-w-full items-center justify-center px-2">
         <AdsterraSlot name="sticky-320x50" width={320} height={50} label={false} />
@@ -111,17 +101,12 @@ const anchorCss = `
   show && (
     <script is:inline>
       /* ES2018 only (no optional chaining / nullish coalescing / optional
-         catch binding) — runs untranspiled in the HTML. Reveal-on-consent +
-         dismiss-with-memory: declined/unchosen consent keeps the anchor
-         hidden forever; dismissed hides it for good and drops the body
-         padding. Event + storage names mirror src/lib/shared-ui.ts (inline
-         scripts can't import; tests/consent.test.ts pins the duplicates). */
+         catch binding) — runs untranspiled in the HTML. Dismiss-with-memory:
+         × hides the anchor for good and drops the body padding. */
       (function () {
         var ID = 'mobile-anchor-ad';
         var BTN_ID = 'dismiss-mobile-anchor';
         var DISMISS_KEY = 'mobile-anchor-dismissed';
-        var CONSENT_KEY = 'aw-cookie-consent';
-        var CONSENT_EVENT = 'aw:consent-accepted';
         var anchor = document.getElementById(ID);
         var btn = document.getElementById(BTN_ID);
         if (!anchor) return;
@@ -135,38 +120,8 @@ const anchorCss = `
           anchor.remove();
           return;
         }
-        var revealed = false;
-        var reveal = function () {
-          if (revealed) return;
-          revealed = true;
-          anchor.classList.remove('hidden');
-          document.body.classList.add('has-mobile-anchor');
-        };
-        var consentDeferred = anchor.getAttribute('data-consent-deferred') === '1';
-        var wireConsent = function () {
-          var stored = null;
-          try {
-            stored = localStorage.getItem(CONSENT_KEY);
-          } catch (e) {
-            /* treat as no consent yet */
-          }
-          if (stored === 'accepted') {
-            reveal();
-            return;
-          }
-          document.addEventListener(CONSENT_EVENT, reveal);
-        };
-        if (consentDeferred) {
-          if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', wireConsent);
-          } else {
-            wireConsent();
-          }
-        } else {
-          /* No tracking env → consent banner never renders → show directly
-             (out-of-box behavior: ads load without a consent step). */
-          reveal();
-        }
+        anchor.classList.remove('hidden');
+        document.body.classList.add('has-mobile-anchor');
         if (btn) {
           btn.addEventListener('click', function () {
             try {

@@ -91,13 +91,9 @@ jobs:
           PUBLIC_SPONSOR_IMAGE_URL = ""
           # Cloudflare Web Analytics — blank = disabled.
           PUBLIC_CF_BEACON_TOKEN = ""
-          # Optional slots (empty = disabled) — fill HERE, not the dashboard:
-          #PUBLIC_ADSENSE_CLIENT = ""
-          #PUBLIC_ADSENSE_SLOT_STICKY = ""
-          #PUBLIC_ADSENSE_SLOT_SIDEBAR = ""
-          #PUBLIC_ADSENSE_SLOT_INCONTENT = ""
-          # Adsterra — for each slot you enable, also create public/ads/<name>.html
-          # with the snippet from the Adsterra dashboard (see docs/ads.md).
+          # Adsterra (optional slots, empty = disabled) — for each slot you enable,
+          # also create public/ads/<name>.html with the snippet from the Adsterra
+          # dashboard (see docs/ads.md).
           #PUBLIC_ADSTERRA_SLOT_SIDEBAR_300X250 = ""
           #PUBLIC_ADSTERRA_SLOT_INCONTENT_728X90 = ""
           #PUBLIC_ADSTERRA_SLOT_NATIVE_BANNER = ""
@@ -132,8 +128,7 @@ jobs:
               'SITE_URL', 'INDEXNOW_KEY', 'PUBLIC_GISCUS_REPO', 'PUBLIC_GISCUS_REPO_ID',
               'PUBLIC_GISCUS_CATEGORY', 'PUBLIC_GISCUS_CATEGORY_ID', 'PUBLIC_GISCUS_MAPPING',
               'PUBLIC_SPONSOR_URL', 'PUBLIC_SPONSOR_IMAGE_URL', 'PUBLIC_CF_BEACON_TOKEN',
-              'PUBLIC_ADSENSE_CLIENT', 'PUBLIC_ADSENSE_SLOT_STICKY', 'PUBLIC_ADSENSE_SLOT_SIDEBAR',
-              'PUBLIC_ADSENSE_SLOT_INCONTENT', 'PUBLIC_ADSTERRA_SLOT_SIDEBAR_300X250',
+              'PUBLIC_ADSTERRA_SLOT_SIDEBAR_300X250',
               'PUBLIC_ADSTERRA_SLOT_INCONTENT_728X90', 'PUBLIC_ADSTERRA_SLOT_NATIVE_BANNER',
               'PUBLIC_ADSTERRA_SLOT_STICKY_320X50', 'PUBLIC_ADSTERRA_SLOT_SIDEBAR_160X300',
               'PUBLIC_ADSTERRA_SLOT_SIDEBAR_160X600', 'PUBLIC_GA_ID', 'PUBLIC_GSC_VERIFICATION',

@@ -10,22 +10,17 @@
  *   </AdsterraSlotPair>
  *
  * Content that must render AFTER the native banner goes in the `after`
- * slot (the landing root's FinalCta keeps its pre-banner position that way):
+ * slot:
  *
  *   <AdsterraSlotPair>
- *     <CommunitySites t={t} />
- *     <Fragment slot="after"><FinalCta t={t} /></Fragment>
+ *     ...page content...
+ *     <Fragment slot="after">...</Fragment>
  *   </AdsterraSlotPair>
  *
- * DOM order is always banner → default slot → native → after slot, so every
- * page renders byte-equivalent to the previously hand-written pairs (modulo
- * AdsterraSlot's own consent-gated deferred load). All call sites used
- * identical props on both units, so the pair takes none — the slot names and
- * sizes are pinned here once. Docs-center pages that mount ONLY the native
- * banner keep a direct <AdsterraSlot name="native-banner"> — not a pair.
- *
- * Consent-gated deferred loading lives inside AdsterraSlot; the pair
- * inherits it by composition (no logic duplicated here).
+ * DOM order is always banner → default slot → native → after slot. All call
+ * sites used identical props on both units, so the pair takes none — the slot
+ * names and sizes are pinned here once. A page that mounts ONLY the native
+ * banner uses a direct <AdsterraSlot name="native-banner"> — not a pair.
  */
 import AdsterraSlot from './AdsterraSlot.astro';
 ---

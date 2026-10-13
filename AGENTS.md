@@ -69,11 +69,11 @@ Content layer (src/content, src/locales)                   — fully replace per
 - 这个不对称是有意的:列表追求准确(不展示不存在的内容),详情追求可达(直接 URL 永远能打开)。
 - **fallback 页对搜索引擎不可见(v2.27.0)**:回退页(英文内容出现在 `/ja/…` URL)渲染 `noindex, nofollow`(ArticlePage 的 `noindex={entry.data.noindex || isFallback}`),并从 sitemap 排除(astro.config.ts 经 `lib/fallback-paths.ts` 从 coverage 推导)——否则 Google 会看到两个 self-canonical 的重复英文 URL。人类直达可达性不变;翻译落地后 `isFallback` 翻转,页面自动恢复索引。决策记录:`docs/superpowers/specs/2026-09-15-fallback-seo-noindex.md`。
 
-## Ads: Google AdSense, 3 Positions
+## Ads: Adsterra
 
-广告系统基于 Google AdSense,3 个广告位(Sticky / Sidebar / InContent)各一个 `<AdSenseSlot position="...">` 组件。`AdSenseSlot` 根据 `position` 读对应的 `PUBLIC_ADSENSE_SLOT_*` 环境变量,渲染 `<ins class="adsbygoogle">` 标签。`PUBLIC_ADSENSE_CLIENT` 或对应 slot ID 为空时组件 `return null` 不渲染(保 Lighthouse 4×100 开箱契约)。AdSense loader 由 `BaseLayout.astro` 在 `<head>` 注入,仅当 `PUBLIC_ADSENSE_CLIENT` 有值时加载。详见 PRD §10。
+广告系统基于 Adsterra:`AdsterraSlot`(每个单元一个 `public/ads/<name>.html` + sandbox iframe,env `PUBLIC_ADSTERRA_SLOT_<NAME>` 门控,空=不渲染)+ `MobileAnchorAd`(文章页 320×50 底部锚位,env `PUBLIC_ADSTERRA_SLOT_STICKY_320X50`,可关闭且记忆)。当前挂载点:文章页 `AdsterraSlotPair`(incontent-728x90 + native-banner)、文章侧栏 `sidebar-300x250`;`sidebar-160x300` / `sidebar-160x600` 原先只挂在已删除的站内手册页,现无挂载点。预挂位总清单与接入教程见 `docs/ads.md`,架构见 PRD §10.7,env 全表见 PRD 附录 A.2。
 
-Adsterra(v2.26.0 起)是并存的第二广告网络:`AdsterraSlot`(每单元一个 `public/ads/<name>.html` + sandbox iframe,env `PUBLIC_ADSTERRA_SLOT_<NAME>` 门控,空=不渲染,与 GA/AdSense 同一同意门控)+ `MobileAnchorAd`(v2.28.0,文章页 320×50 底部锚位,env `PUBLIC_ADSTERRA_SLOT_STICKY_320X50`)。预挂位总清单与接入教程见 `docs/ads.md`,架构见 PRD §10.7,env 全表见 PRD 附录 A.2。
+🚨 **本 fork 已移除 Google AdSense 与 cookie 同意横幅(`CookieConsent`)**:GA4 与 Adsterra 现在都**无同意门控、直接加载**。这是有意的取舍,代价是欧盟流量的 GDPR 风险;取证与恢复路径(含 `git show c566440:...` 取回原组件)记在 `docs/ads.md`。
 
 ## Conversational Content Authoring (AI-native page generation)
 
@@ -95,7 +95,7 @@ pnpm dev              # dev server, http://localhost:4321
 pnpm build            # includes Content schema validation — fails on bad frontmatter; postbuild indexes Pagefind search
 pnpm typecheck        # astro check (0 errors expected)
 pnpm lint             # ESLint (eslint-plugin-astro)
-pnpm test             # Vitest — 20 suites (affiliates, agents-consistency, apply-template, changelog, codes-consistency, consent, content-links, content-utils, covers, home-ui, i18n-smoke, indexnow, prompt, routing-flags, seo, sync-codes, tags, today, url, workflows)
+pnpm test             # Vitest — 19 suites (affiliates, agents-consistency, apply-template, changelog, codes-consistency, content-links, content-utils, covers, home-ui, i18n-smoke, indexnow, prompt, routing-flags, seo, sync-codes, tags, today, url, workflows)
 pnpm test:e2e         # apply-template real-mode E2E (git archive → scratch copy → pipe answers → assert shape → build; CI job e2e-template runs it; tests the COMMITTED tree)
 pnpm check-config     # scripts/check-config.ts — nav/locale 3-place consistency
 pnpm new-locale       # scripts/new-locale.ts — scaffold a new language
