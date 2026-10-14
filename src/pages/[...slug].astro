@@ -8,11 +8,12 @@
  *
  * Non-default locales (/ja/...) are handled by src/pages/[locale]/[...slug].astro.
  */
+import { render } from 'astro:content';
 import ListPage from '~/components/article/ListPage.astro';
 import ArticlePage from '~/components/article/ArticlePage.astro';
 import { CONTENT_TYPES } from '~/config/navigation';
 import { defaultLocale, type Locale } from '~/i18n/routing';
-import { getEntryWithFallback, localesForEntry, localesForCategory, parseEntryId, type ResolvedEntry } from '~/lib/content';
+import { getCategoryIndex, getEntryWithFallback, localesForEntry, localesForCategory, parseEntryId, type ResolvedEntry } from '~/lib/content';
 import { detailPath, languageAlternates, listPath } from '~/lib/url';
 
 export async function getStaticPaths() {
@@ -68,6 +69,13 @@ if (view === 'not-found') {
   return new Response('Not Found', { status: 404 });
 }
 
+// Category landing body — src/content/wiki/<locale>/<category>/index.mdx.
+// Its presence is the ONLY difference between a plain list page and a landing
+// page: no mode flag, no second render path. Absent file → null → the slot
+// renders empty and the page is exactly the list it has always been.
+const indexEntry = view === 'list' ? await getCategoryIndex(category, locale) : null;
+const IndexContent = indexEntry ? (await render(indexEntry)).Content : null;
+
 // Build hreflang alternates for this page.
 // List page: /<category> for default locale, /<locale>/<category> otherwise —
 // only locales that actually have an article in the category are declared
@@ -88,7 +96,16 @@ const alternates =
     : languageAlternates((loc) => detailPath(category, articleSlug, loc), entryLocales);
 ---
 
-{view === 'list' && <ListPage locale={locale} category={category} alternates={alternates} />}
+{view === 'list' && (
+  <ListPage
+    locale={locale}
+    category={category}
+    alternates={alternates}
+    hasIndex={indexEntry !== null}
+  >
+    {IndexContent && <IndexContent />}
+  </ListPage>
+)}
 {view === 'article' && resolved && (
   <ArticlePage locale={locale} resolved={resolved} alternates={alternates} availableLocales={altLocales} />
 )}

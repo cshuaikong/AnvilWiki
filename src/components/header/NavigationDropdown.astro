@@ -1,0 +1,71 @@
+---
+import { Icon } from 'astro-icon/components';
+import type { NavGroup } from '~/lib/navigation';
+import type { Locale } from '~/i18n/routing';
+import { localizePath } from '~/lib/url';
+
+interface Props {
+  group: NavGroup;
+  locale: Locale;
+  currentPath: string;
+  alignEnd?: boolean;
+}
+const { group, locale, currentPath, alignEnd = false } = Astro.props;
+const path = localizePath(group.path, locale);
+const isActive = currentPath === path || currentPath.startsWith(path);
+const hasArticles = group.entries.length > 0;
+---
+
+<div class="navigation-item relative">
+  <a
+    href={path}
+    class:list={[
+      'flex items-center gap-1 rounded-md px-3 py-1.5 text-sm font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
+      isActive ? 'bg-muted text-nav' : 'text-foreground/70 hover:bg-muted hover:text-foreground',
+    ]}
+  >
+    {group.label}
+    {hasArticles && <Icon name="lucide:chevron-down" class="h-3.5 w-3.5" />}
+  </a>
+  {hasArticles && (
+    <div class:list={[
+      'navigation-dropdown absolute top-full z-10 w-72 max-w-[calc(100vw-2rem)] pt-2',
+      alignEnd ? 'right-0' : 'left-0',
+    ]}>
+      <ul class="max-h-[min(24rem,calc(100vh-5rem))] overflow-y-auto rounded-md border border-border bg-card p-1 shadow-lg">
+        {group.entries.map((entry) => {
+          const href = localizePath(entry.path, locale);
+          return (
+            <li>
+              <a
+                href={href}
+                aria-current={currentPath === href ? 'page' : undefined}
+                class:list={[
+                  'block break-words rounded px-3 py-2 text-sm transition hover:bg-muted focus-visible:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px]',
+                  currentPath === href ? 'font-semibold text-nav' : 'text-foreground',
+                ]}
+              >
+                {entry.title}
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  )}
+</div>
+
+<style>
+  .navigation-dropdown {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .navigation-item:hover > .navigation-dropdown,
+  .navigation-item:focus-within > .navigation-dropdown {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+  }
+</style>

@@ -10,8 +10,10 @@
 export {
   getEntryWithFallback,
   getEntriesByCategory,
+  getCategoryIndex,
   localesForEntry,
   localesForCategory,
+  localesWithCategoryIndex,
   getRecentEntries,
   getRelatedEntries,
   getTagsWithCounts,
@@ -19,6 +21,7 @@ export {
   tagLabelFor,
   localesForTag,
   type WikiEntry,
+  type CategoryIndexEntry,
   type ResolvedEntry,
 } from '~/i18n/content';
 

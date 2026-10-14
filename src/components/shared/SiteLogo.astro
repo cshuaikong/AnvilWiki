@@ -1,0 +1,19 @@
+---
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+// One shared logo for header and footer; no icon fallback when the file is absent.
+const hasLogo = existsSync(resolve('public/favicon/android-chrome-192x192.png'));
+---
+
+{
+  hasLogo && (
+    <img
+      src="/favicon/android-chrome-192x192.png"
+      alt=""
+      width="32"
+      height="32"
+      class="h-8 w-8 shrink-0 rounded object-contain"
+    />
+  )
+}

@@ -38,7 +38,7 @@
 
 | 类别 | 具体内容 | 说明 |
 |---|---|---|
-| demo 文章 | `src/content/wiki/` 下**内容判定为 demo** 的文章（正文提到 demo 游戏名即删；你自己的文章与上轮脚手架**自动保留并逐个警告**，目录结构保留——重跑绝不毁你的文章） | CLI 清空后**每个所选栏目自动补 1 篇英文脚手架**，保证 build 不空转；同时自动填充所选栏目的 `nav.<key>` 标签与 `overview.<key>` 条目（英文默认值，供你翻译/改写——不填的话 fork 第一次 `pnpm check-config` 就是红的） |
+| demo 文章 | `src/content/wiki/` 下**内容判定为 demo** 的文章（正文提到 demo 游戏名即删；你自己的文章与上轮脚手架**自动保留并逐个警告**，目录结构保留——重跑绝不毁你的文章） | CLI 清空后**每个所选栏目自动补 2 个英文文件**：1 篇脚手架文章（保证 build 不空转）+ 1 个 `index.mdx` 栏目页骨架（**只有注释的统一导读提纲**，渲染不出东西所以栏目页行为不变；想把正文写在卡片网格上方就填它——约定见 [content-format.md 的「栏目页正文」节](./content-format.md)）；同时自动填充所选栏目的 `nav.<key>` 标签与 `overview.<key>` 条目（英文默认值，供你翻译/改写——不填的话 fork 第一次 `pnpm check-config` 就是红的） |
 | 空栏目目录 | 清空后仍为空、且不在所选栏目里的内容目录 | 未选栏目的空目录是「不可达分类」（template-audit 会拦），一并剪掉 |
 | demo 配图 | **全部按文件名删**（整目录 rm -rf 已废除）：`src/assets/gallery/` 6 张画廊图、`public/images/articles/` 2 张内文图、`src/assets/covers/` 9 张封面；清单见 `scripts/lib/apply-rewrites.ts` 的 `DEMO_COVERS` / `DEMO_GALLERY_IMAGES` / `DEMO_ARTICLE_IMAGES`（`tests/apply-template.test.ts` 钉住与 setup.yml 的同步） | 按名删除而非通配——`public/images/articles/` 正是内容规范让你放**自己**内文图的地方，你的图绝不会被误删 |
 | demo 站验证文件 | `public/` 根目录下 demo 站自己的搜索引擎验证 token（如 `google8362d9398114b66b.html`，清单 `DEMO_PUBLIC_FILES`） | 这是上游 demo 站域名的运维 token；你验证**自己的**站点时 GSC 会生成不同的随机文件名，按精确文件名删除绝不会误删你自己的验证文件 |
@@ -239,22 +239,15 @@ echo '{}' > src/locales/ru.json
 
 | 文件 | 状态 |
 |---|---|
-| `favicon.svg` / `favicon-16x16.png` / `favicon-32x32.png` | ⚠️ **本仓库不含** —— 见下方 |
-| `apple-touch-icon.png`（180×180） | ⚠️ **本仓库不含** |
-| `android-chrome-192x192.png` / `android-chrome-512x512.png` | ⚠️ **本仓库不含** |
-| `favicon.ico` | ⚠️ **本仓库不含**，且 `gen-assets` 不生成（sharp 写不了 ICO） |
-| `manifest.json` | 存在（`name` / `short_name` / `theme_color` 会被 CLI 与 `gen-assets` 改写） |
-| `images/hero.webp` | Hero 图，由 `gen-assets` 生成 |
+| `favicon/` | favicon、Apple Touch 和 Android 图标统一放在此目录；页面只引用已存在的文件 |
+| `favicon/android-chrome-192x192.png` | 顶部和页脚共用的 Logo，显示 32×32；文件不存在时不显示 Logo |
+| `manifest.json` | PWA 元数据，图标地址指向 `/favicon/` |
+| `images/hero.webp` | 默认分享图片（1200×630） |
 
-**🚨 favicon 全套刻意不随仓库分发**：避免你的站上线后顶着别人的品牌标记（模板自带的是一枚 AnvilWiki 橙底白字「A」）。代码里的三处接线**都已就位**——`<link rel="icon">`（BaseLayout）、`manifest.json` 的 `icons`、Organization JSON-LD 的 `logo`——文件备齐后自动生效。
+顶部和页脚通过 `SiteLogo.astro` 共用 Logo。替换 `public/favicon/android-chrome-192x192.png` 后重新构建即可，不需要改组件。
 
-生成一条命令：
+`pnpm gen-assets` 的图标输出也位于 `public/favicon/`。目录内存在上传的 `favicon.ico` 时保留整套图标（包括 `--force`），仍可生成 Hero 图并更新 manifest。使用自定义图标时保留这一文件，避免生成器覆盖品牌素材。
 
-```bash
-pnpm gen-assets
-```
-
-按 `src/styles/globals.css` 的当前主题色 + `site.game.name` 首字母，写出 `favicon.svg` + 5 张 PNG + `hero.webp`（1200×630）。缓存命中会跳过，但**输出文件缺失即强制重生成**（不会因为缓存而留下空洞）。想要自定义图案就按同名文件丢进 `public/` 覆盖。
 
 ⚠️ 在生成之前，浏览器与爬虫对这些路径的请求会静默 404（`check-links` 只审计页面链接，不看资源扩展名）。
 

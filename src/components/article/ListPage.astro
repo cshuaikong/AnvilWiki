@@ -7,21 +7,27 @@
  */
 import { Icon } from 'astro-icon/components';
 import LocaleLayout from '~/components/layout/LocaleLayout.astro';
-import ArticleCover from '~/components/article/ArticleCover.astro';
+import CategoryGrid from '~/components/article/CategoryGrid.astro';
 import { NAVIGATION_CONFIG } from '~/config/navigation';
 import { type Locale } from '~/i18n/routing';
 import { getUi } from '~/i18n/ui';
 import { getEntriesByCategory, parseEntryId } from '~/lib/content';
 import { itemListJsonLd, pageTitle, simpleBreadcrumbJsonLd } from '~/lib/seo';
-import { detailPath, homeUrl, listPath } from '~/lib/url';
+import { homeUrl, listPath } from '~/lib/url';
 
 interface Props {
   locale: Locale;
   category: string;
   /** hreflang alternates (built by the route page). */
   alternates?: Array<{ hreflang: string; href: string }>;
+  /**
+   * Whether this category ships an `index.mdx` landing body (resolved by the
+   * route page). Feeds the noindex decision below: a category with real prose
+   * but no articles yet is NOT the thin empty state this flag exists for.
+   */
+  hasIndex?: boolean;
 }
-const { locale, category, alternates = [] } = Astro.props;
+const { locale, category, alternates = [], hasIndex = false } = Astro.props;
 const ui = getUi(locale);
 const nav = ui.nav as Record<string, string>;
 const shared = ui.shared;
@@ -66,16 +72,21 @@ const jsonLd = [
 ];
 ---
 
-<!-- An empty list is a ~100-word thin-content page (NMS /starships was indexed
-     as one). noindex keeps it out of Google until real articles exist; the
-     sitemap filter excludes the same paths (astro.config.ts). -->
+{/* A category with no articles and no landing prose is a ~100-word
+     thin-content page (NMS /starships was indexed as one). noindex keeps it out
+     of Google until real content exists; the sitemap filter excludes the same
+     paths (astro.config.ts). A category that ships index.mdx prose is NOT thin
+     — it stays indexable with an empty grid.
+
+     Astro-expression comment on purpose: an HTML `<!-- -->` here would ship
+     the note into every category page's markup. */}
 <LocaleLayout
   locale={locale}
   title={pageTitle(title)}
   description={description}
   alternates={alternates}
   jsonLd={jsonLd}
-  noindex={entries.length === 0}
+  noindex={entries.length === 0 && !hasIndex}
 >
   <div class="space-y-6">
     <header>
@@ -91,33 +102,11 @@ const jsonLd = [
       <p class="mt-2 max-w-2xl text-muted-foreground">{description}</p>
     </header>
 
-    {
-      entries.length === 0 ? (
-        <div class="rounded-lg border border-dashed bg-card p-12 text-center">
-          <Icon name="lucide:inbox" class="mx-auto h-10 w-10 text-muted-foreground" />
-          <p class="mt-3 text-muted-foreground">{shared.noArticles}</p>
-        </div>
-      ) : (
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {entries.map((entry) => {
-            const slug = parseEntryId(entry.id)?.slug ?? '';
-            return (
-              <a href={detailPath(category, slug, locale)} class="card p-5">
-                {entry.data.image && <ArticleCover src={entry.data.image} />}
-                <h2 class="font-semibold leading-snug">{entry.data.title}</h2>
-                <p class="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                  {entry.data.description}
-                </p>
-                <p class="mt-3 text-xs text-muted-foreground">
-                  {entry.data.lastModified
-                    ? `${shared.lastUpdated}: ${entry.data.lastModified.toLocaleDateString(locale, { timeZone: 'UTC' })}`
-                    : `${shared.publishedOn}: ${entry.data.date.toLocaleDateString(locale, { timeZone: 'UTC' })}`}
-                </p>
-              </a>
-            );
-          })}
-        </div>
-      )
-    }
+    {/* Category landing prose: the body of
+        src/content/wiki/<locale>/<category>/index.mdx, when that file exists.
+        No file (no slot content) → this page is exactly the list it always was. */}
+    <slot />
+
+    <CategoryGrid locale={locale} category={category} entries={entries} />
   </div>
 </LocaleLayout>

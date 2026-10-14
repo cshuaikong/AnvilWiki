@@ -16,6 +16,37 @@ src/content/wiki/ja/bosses/emberfang.mdx           → /ja/bosses/emberfang（�
 
 > `category` 必须与 `src/config/navigation.ts` 的 `key` 一致。**新建分类必须先有文章，再进 `navigation.ts`**——空分类的列表页是 thin content（约百词的空状态页），进了导航就会进 sitemap「邀请收录」低质页面（真实事故：/starships 空分类页被收录）。正确顺序：先写好第一批 3-5 篇文章放进新分类目录，再把分类加进导航。
 
+## 栏目页正文：`index.mdx`
+
+分类目录里的 `index.mdx` 是这个**栏目 URL 本身**的正文（`/bosses/`、`/ja/bosses/`），不是一篇文章：
+
+```
+src/content/wiki/en/bosses/index.mdx     → /bosses/     （栏目页正文）
+src/content/wiki/en/bosses/emberfang.mdx → /bosses/emberfang
+```
+
+写在里面的内容渲染在**文章卡片网格上方**，页面原有的 `<h1>`、描述、面包屑都还在。**删掉这个文件，栏目页就回到纯卡片列表**——没有模式开关，文件在不在就是唯一区别。
+
+几条要点：
+
+- **`index.mdx` 不是文章**：它不出现在卡片网格里、不进 `/recent/`、RSS、标签页、相关文章，也**不会生成 `/bosses/index/` 这种 URL**。这是在 loader 层排除的（`src/content.config.ts` 的 `categoryIndex` 集合），所以任何消费文章的地方都不需要特判。
+- **只有真正渲染出内容的 `index.mdx` 才算数**。`pnpm apply-template` 建的骨架是**空的（只有注释）**——它渲染不出东西，所以栏目页行为完全不变。这正是「index 默认是列表页」的含义。往里面写了正文之后，这个栏目页就不再是 thin content：**空网格也不再 noindex**，并且（0 篇文章时）仍然留在 sitemap 里。
+- **页面侧和 sitemap 侧用同一条判断**（「是否真的渲染出正文」）：`src/i18n/content.ts` 的 `hasLandingProse` 与 `astro.config.ts` 的 fs 扫描。两边必须同真相，否则页面 `<head>` 会和 sitemap 的 hreflang 自相矛盾。
+- 可选 frontmatter：`lastModified`（喂栏目 URL 的 sitemap `<lastmod>`；不写就用该栏目最新文章的日期）、`draft: true`（起草期间不进生产构建）。
+- **固定布局**：页面标题、描述与面包屑 → `index.mdx` 栏目导读 → 自动文章卡片网格。正文不要 import 或插入 `CategoryGrid`，否则会重复显示网格。
+
+### 默认导读格式
+
+桌面顶部导航会在鼠标移入栏目或键盘焦点进入时显示该语言的文章列表；没有文章的栏目只显示栏目链接。文章列表与侧栏使用同一内容读取逻辑，生产环境排除草稿和 `index.mdx`，按最新日期排序。栏目名称仍可点击进入栏目页，长列表可滚动；移动端保留原有栏目菜单。
+
+生成器提供以下三段写作提纲，全部放在 MDX 注释中；填好后将正文移到注释外即可。发布状态由作者人工处理，模板不自动设置 `draft: true`。
+
+1. **What will you find here?**：用一小段说明栏目覆盖哪些主题、解决什么问题，不重复页面描述。
+2. **Where should you start?**：选择 2–3 篇已存在的文章，说明适合谁读、推荐阅读顺序；链接使用尾斜杠和正确语言前缀。没有合适文章时省略，不能编造链接。
+3. **What should you check before using these guides?**：列出 2–4 条本栏目有用的准备事项、比较标准或版本差异，只写已核实信息；没有增量信息时省略。
+
+这是统一写作结构，不是要求所有栏目复制同一段正文。标题可随栏目和语言改写，具体数值、完整攻略留在文章详情页。末尾无需再写「文章列表」标题，卡片网格会自动接上。空提纲保持注释状态，避免占位提示被发布。
+
 ---
 
 ## Frontmatter（YAML 头部）

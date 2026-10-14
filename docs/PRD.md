@@ -298,7 +298,7 @@ anvilwiki/
 │   └── superpowers/              # specs + plans（架构决策存档）
 ├── public/
 │   ├── images/                   # hero.webp + showcase/（截图，fork 时 CLI/工作流清理）
-│   ├── favicon.ico / favicon-*.png / apple-touch-icon.png / android-chrome-*.png
+│   ├── favicon/              # favicon.ico / favicon-*.png / apple-touch-icon.png / android-chrome-*.png
 │   ├── manifest.json / ads.txt / _headers       # _headers：安全头 + 缓存策略
 │   └── robots.txt                # （构建时由 endpoint 生成，此文件可不存在）
 ├── src/

@@ -532,10 +532,60 @@ function clearDemoAssets() {
 }
 
 /**
+ * Category landing-page stub — one per scaffolded category.
+ *
+ * Deliberately EMPTY: a comment-only MDX body renders nothing, so the category
+ * is still exactly the card list it was. The page-side flag keys off RENDERED
+ * prose, not file existence (see hasLandingProse in src/i18n/content.ts), which
+ * is what keeps an inert stub from switching off an empty category's noindex.
+ * A "Replace this text" placeholder here would print straight onto a live
+ * category page — the failure mode the locale-JSON overview placeholders have.
+ */
+function categoryIndexStub(key: string): string {
+  return `{/*
+  Category introduction for /${key}/
+
+  Fixed page order: title + description + breadcrumb, this introduction,
+  then ONE automatic article card grid. Do not import CategoryGrid here.
+  Start at H2; the page already provides H1. Use this file's locale.
+
+  Writing outline (replace the prompts with verified, category-specific prose,
+  then move the finished text OUTSIDE this comment):
+
+  ## What will you find here?
+  Explain the topics covered and the questions this category helps answer.
+  Keep it to one short paragraph; do not repeat the page description.
+
+  ## Where should you start?
+  Link to 2-3 existing articles in a useful reading order. Explain who each
+  article is for. Use trailing slashes and the correct locale prefix.
+  Omit this section until suitable articles exist; never invent links.
+
+  ## What should you check before using these guides?
+  Add 2-4 practical checks relevant to this category, such as requirements,
+  comparison criteria or version differences. Only state verified facts.
+  Omit this section when it adds no useful information.
+
+  The article grid follows automatically; no extra heading or component needed.
+  Optional lastModified frontmatter belongs at the top of the file. Update it
+  when you verify the introduction; omit it to use the newest article's date.
+  Publication flags are managed manually, not added by this template.
+
+  Leave this comment-only outline in place (or delete the file) to keep the
+  original list page. Placeholder instructions must never become live prose.
+*/}
+`;
+
+}
+
+/**
  * After clearing demo content, drop one scaffold article per chosen category
  * (English) so the site builds and list pages aren't empty. The scaffold
  * passes schema validation (description 40-165 chars, guarded for long
  * category keys by buildScaffoldDescription) out of the box.
+ *
+ * Each category also gets an inert `index.mdx` landing-page stub (see
+ * categoryIndexStub) — the file to fill in when you want prose above the grid.
  */
 function scaffoldContent(categories: { key: string }[]): number {
   const enBase = path.resolve(ROOT, 'src/content/wiki/en');
@@ -568,6 +618,11 @@ rendered from the frontmatter title), and start each section with a direct
 40-60 word answer for AI search engines.
 `,
       );
+      created++;
+    }
+    const idxFile = path.join(dir, 'index.mdx');
+    if (!DRY_RUN && !fs.existsSync(idxFile)) {
+      writeAtomic(idxFile, categoryIndexStub(key));
       created++;
     }
   }

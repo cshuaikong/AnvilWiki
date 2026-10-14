@@ -1,5 +1,5 @@
 /**
- * Dynamic sidebar navigation — scans actual MDX files to build nav groups.
+ * Shared header/sidebar navigation — reads published articles to build groups.
  *
  * No hardcoded lists:
  * if you add an MDX file, it appears in the sidebar automatically.
@@ -20,7 +20,7 @@ export interface NavGroup {
 }
 
 /**
- * Build the sidebar navigation for a locale.
+ * Build header and sidebar navigation for a locale.
  * Groups come from NAVIGATION_CONFIG; entries come from actual MDX files.
  * Groups with zero entries in this locale are still shown (empty, so users
  * see the structure and know what content is coming).

@@ -35,11 +35,12 @@ import { fallbackDetailPaths } from './src/lib/fallback-paths';
  * minus those noindex articles: detail-page hreflang alternates must not
  * advertise a language version that asks not to be indexed.
  *
- * Also builds `categoryCoverage`: category → locales with ≥1 published MDX.
- * (category × locale) list pages with zero articles are thin-content empty
- * states (ListPage renders them noindex) — they are excluded from the
- * sitemap here, and the list-page alternates only advertise covered locales
- * (mirroring localesForCategory on the page side).
+ * Also builds `categoryCoverage`: category → locales with ≥1 published MDX
+ * **or a category landing body** (`<locale>/<category>/index.mdx`).
+ * (category × locale) list pages with zero content are thin-content empty
+ * states (ListPage renders them noindex) — they are excluded from the sitemap
+ * here, and the list-page alternates only advertise covered locales (mirroring
+ * localesForCategory on the page side, which counts the landing body too).
  *
  * Plain fs scan at config time — `astro:content` is not importable here.
  */
@@ -85,6 +86,53 @@ function buildLastmodMap(
       // article is excluded from the build while its lastmod still feeds
       // the sitemap (a dead URL advertised as fresh).
       if (/^draft:\s*(?:true|True|TRUE)(?:[ \t]+#.*)?\s*$/m.test(fm)) continue;
+
+      // --- Category landing body (.../<category>/index.mdx) ------------------
+      // Real content on the category URL, but NOT an article: it must never
+      // reach the article maps (there is no /<cat>/index URL to give a lastmod
+      // to, and no article coverage key to feed). What it DOES do is mark the
+      // (category × locale) pair covered, so the empty-list exclusion further
+      // down keeps the page in the sitemap — a category with prose is not the
+      // thin empty state this whole block exists to suppress. The draft check
+      // above already ran, so a draft landing page cannot keep an empty
+      // category in the sitemap.
+      //
+      // Kept in step with the page side (src/i18n/content.ts
+      // localesWithCategoryIndex + ListPage's hasIndex): page and sitemap must
+      // agree or the hreflang set contradicts the <head>.
+      if (entry.name === 'index.mdx') {
+        // "Covered" means the landing page actually RENDERS something — the
+        // same question src/i18n/content.ts hasLandingProse() asks of the
+        // parsed entry. A freshly scaffolded landing page is a comment-only
+        // stub: counting it as coverage would keep an otherwise-empty category
+        // in the sitemap, and (page side) switch off its noindex — the
+        // thin-content leak this block exists to prevent. The strip is
+        // duplicated because astro:content is not importable at config time.
+        const mdxBody = src
+          .replace(/^---\r?\n[\s\S]*?\r?\n---(?:\r?\n|$)/, '')
+          .replace(/\{\/\*[\s\S]*?\*\/\}/g, '');
+        if (!mdxBody.trim()) continue;
+
+        const relIdx = path.relative(base, p).replace(/\.mdx$/, '');
+        const [idxLoc, idxCat] = relIdx.split(path.sep);
+        if (!idxLoc || !idxCat) continue; // malformed path — nothing to key on
+        const idxCov = categoryCoverage.get(idxCat) ?? new Set<string>();
+        idxCov.add(idxLoc);
+        categoryCoverage.set(idxCat, idxCov);
+        // Optional freshness stamp for the category URL itself. Absent → keep
+        // whatever the newest article in the category already set (never clear).
+        const idxIso = (fm.match(/^lastModified:\s*(.+)$/m)?.[1] ?? '')
+          .trim()
+          .replace(/['"]/g, '');
+        const idxDate = idxIso ? new Date(idxIso) : null;
+        if (idxDate && !Number.isNaN(idxDate.getTime())) {
+          const lp = idxLoc === defaultLocale ? `/${idxCat}` : `/${idxLoc}/${idxCat}`;
+          const prev = map.get(lp);
+          if (!prev || prev < idxDate.toISOString()) map.set(lp, idxDate.toISOString());
+        }
+        continue;
+      }
+
       const lm = fm.match(/^lastModified:\s*(.+)$/m)?.[1]?.trim();
       const dt = fm.match(/^date:\s*(.+)$/m)?.[1]?.trim();
       const iso = (lm || dt || '').replace(/['"]/g, '');

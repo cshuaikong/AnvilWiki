@@ -4,6 +4,7 @@
  * All text comes from locale JSON (footer.* namespace).
  */
 import { Icon } from 'astro-icon/components';
+import SiteLogo from '~/components/shared/SiteLogo.astro';
 import { site } from '~/config/site';
 import { type Locale } from '~/i18n/routing';
 import { getUi } from '~/i18n/ui';
@@ -36,7 +37,7 @@ const legalLinks: Array<keyof typeof footer> = ['about', 'faq', 'privacyPolicy',
       {/* Brand */}
       <div>
         <div class="flex items-center gap-2 font-bold">
-          <Icon name="lucide:hammer" class="h-6 w-6 text-nav" />
+          <SiteLogo />
           <span>{site.name}</span>
         </div>
         <p class="mt-2 text-sm text-muted-foreground">{site.tagline}</p>

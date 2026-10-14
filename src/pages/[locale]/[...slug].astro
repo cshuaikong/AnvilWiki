@@ -8,11 +8,12 @@
  *
  * English (default locale, no prefix) is handled by src/pages/[...slug].astro.
  */
+import { render } from 'astro:content';
 import ListPage from '~/components/article/ListPage.astro';
 import ArticlePage from '~/components/article/ArticlePage.astro';
 import { CONTENT_TYPES } from '~/config/navigation';
 import { isLocale, defaultLocale, locales, type Locale } from '~/i18n/routing';
-import { getEntryWithFallback, localesForEntry, localesForCategory, parseEntryId, type ResolvedEntry } from '~/lib/content';
+import { getCategoryIndex, getEntryWithFallback, localesForEntry, localesForCategory, parseEntryId, type ResolvedEntry } from '~/lib/content';
 import { detailPath, languageAlternates, listPath } from '~/lib/url';
 
 export async function getStaticPaths() {
@@ -96,6 +97,12 @@ if (view === 'not-found') {
   return new Response('Not Found', { status: 404 });
 }
 
+// Category landing body for THIS locale — src/content/wiki/<locale>/<category>/
+// index.mdx. Same rule as the default-locale route: the file's presence is the
+// only difference, so a locale without one keeps rendering the plain list.
+const indexEntry = view === 'list' ? await getCategoryIndex(category, locale) : null;
+const IndexContent = indexEntry ? (await render(indexEntry)).Content : null;
+
 // Build hreflang alternates (same URL shape, varying locale). hreflang must
 // match the page's actual CONTENT language: on fallback pages (English
 // content served at a /ja/ URL) declaring hreflang="ja" for this URL is
@@ -114,7 +121,16 @@ const switcherLocales =
   view === 'list' ? locales : Array.from(new Set([locale, ...entryLocales]));
 ---
 
-{view === 'list' && <ListPage locale={locale} category={category} alternates={alternates} />}
+{view === 'list' && (
+  <ListPage
+    locale={locale}
+    category={category}
+    alternates={alternates}
+    hasIndex={indexEntry !== null}
+  >
+    {IndexContent && <IndexContent />}
+  </ListPage>
+)}
 {view === 'article' && resolved && (
   <ArticlePage locale={locale} resolved={resolved} alternates={alternates} availableLocales={switcherLocales} />
 )}

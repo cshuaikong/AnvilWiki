@@ -8,21 +8,20 @@
  * What it writes (IN PLACE, same filenames the template already references —
  * zero code changes needed; the fork lesson this closes: shipping the demo
  * anvil favicon to production because binary assets were "manual, later"):
- *   public/favicon.svg                    brand square + game initial (SVG <text>)
- *   public/favicon-16x16.png              ┐
- *   public/favicon-32x32.png              │ satori-rendered 512 square,
- *   public/apple-touch-icon.png (180)     │ sharp-resized per size
- *   public/android-chrome-192x192.png     │
- *   public/android-chrome-512x512.png     ┘
+ *   public/favicon/favicon.svg                    brand square + game initial (SVG <text>)
+ *   public/favicon/favicon-16x16.png              ┐
+ *   public/favicon/favicon-32x32.png              │ satori-rendered 512 square,
+ *   public/favicon/apple-touch-icon.png (180)     │ sharp-resized per size
+ *   public/favicon/android-chrome-192x192.png     │
+ *   public/favicon/android-chrome-512x512.png     ┘
  *   public/images/hero.webp (1200×630)    brand gradient + site name (og default)
  *   public/manifest.json theme_color      synced to the live brand color
  *
  * Fonts: same pipeline as gen-covers — bundled OFL Lato for Latin, Noto Sans
  * CJK SC (downloaded once, subset per glyph) when the initial is CJK.
  *
- * favicon.ico is NOT regenerated (sharp cannot emit ICO). After this script
- * BaseLayout points browsers at favicon.svg/PNG, so the stale .ico is simply
- * never requested; delete it manually if you want.
+ * Uploaded favicon.ico marks a custom set: all favicon assets are preserved,
+ * including on --force. Without it, SVG and PNGs are generated in public/favicon/.
  *
  * Cache: node_modules/.cache/gen-assets/manifest.json (stableHash of inputs;
  * cache lives OUTSIDE public/ so nothing extra ever ships to production).
@@ -42,7 +41,7 @@ import { NOTO_BASE } from './lib/fonts';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PUBLIC = join(root, 'public');
 const FONT_CACHE = join(root, 'node_modules/.cache/gen-covers/fonts');
-const MANIFEST_VERSION = 1;
+const MANIFEST_VERSION = 2;
 const FORCE = process.argv.includes('--force');
 
 /** Contrast-safe text color on a brand-colored square (WCAG-ish luminance). */
@@ -78,7 +77,10 @@ async function fontsFor(text: string) {
     const url = `${NOTO_BASE}/SimplifiedChinese/${file}`;
     console.log('  downloading NotoSansCJKsc-Regular.otf (~16MB, cached for future runs) …');
     const res = await fetch(url, { signal: AbortSignal.timeout(120_000) });
-    if (!res.ok) throw new Error(`${url} → HTTP ${res.status}. Offline? Pre-download the OTF into scripts/fonts/.`);
+    if (!res.ok)
+      throw new Error(
+        `${url} → HTTP ${res.status}. Offline? Pre-download the OTF into scripts/fonts/.`,
+      );
     otf = Buffer.from(await res.arrayBuffer());
     mkdirSync(FONT_CACHE, { recursive: true });
     writeFileSync(join(FONT_CACHE, file), otf);
@@ -109,7 +111,8 @@ async function renderPng(element: unknown, width: number, height: number, fonts:
 // XML browsers refuse to render. Element content only needs & < > (the value
 // sits between tags, not inside an attribute).
 // ---------------------------------------------------------------------------
-const escapeXmlText = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const escapeXmlText = (s: string) =>
+  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 async function main() {
   const css = readFileSync(join(root, 'src/styles/globals.css'), 'utf8');
@@ -142,7 +145,7 @@ async function main() {
     stableHash(`${MANIFEST_VERSION}|${name}|${inputs.join('|')}`);
   /**
    * A cached group is only skippable when its OUTPUT FILES still exist. The
-   * input hash alone is not enough: delete `public/favicon.svg` by hand (or
+   * input hash alone is not enough: delete `public/favicon/favicon.svg` by hand (or
    * check the repo out without the binaries — the template intentionally
    * ships no favicon set) and the hash is unchanged, so a hash-only test
    * reports "fresh", skips the write, and the file stays missing forever.
@@ -154,61 +157,76 @@ async function main() {
 
   /** PNG favicon outputs — one 512 render, sharp-resized per size. */
   const PNG_FAVICONS: Array<[string, number]> = [
-    ['favicon-16x16.png', 16],
-    ['favicon-32x32.png', 32],
-    ['apple-touch-icon.png', 180],
-    ['android-chrome-192x192.png', 192],
-    ['android-chrome-512x512.png', 512],
+    ['favicon/favicon-16x16.png', 16],
+    ['favicon/favicon-32x32.png', 32],
+    ['favicon/apple-touch-icon.png', 180],
+    ['favicon/android-chrome-192x192.png', 192],
+    ['favicon/android-chrome-512x512.png', 512],
   ];
 
   console.log(`\n🎨 gen-assets — brand ${brandHex}, initial "${initial}"\n`);
 
-  // 1. favicon.svg — handwritten SVG (browser renders the <text> with its own
-  //    system fonts; no font embedding needed at this size).
-  const svgHash = cacheKey('favicon.svg', brandHex, initial);
-  if (fresh('favicon.svg', svgHash, ['favicon.svg'])) {
-    writeFileSync(
-      join(PUBLIC, 'favicon.svg'),
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="${brandHex}"/><text x="32" y="43" font-family="system-ui, -apple-system, 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif" font-size="34" font-weight="700" fill="${ink}" text-anchor="middle">${escapeXmlText(initial)}</text></svg>\n`,
-    );
-    manifest['favicon.svg'] = svgHash;
-    console.log('  ✅ public/favicon.svg');
-  }
-
-  // 2. PNG favicons — one 512px satori render, sharp-resized per size.
-  const pngHash = cacheKey('favicon-png', brandHex, initial);
-  if (fresh('favicon-png', pngHash, PNG_FAVICONS.map(([n]) => n))) {
-    const fonts = await fontsFor(initial);
-    const png512 = await renderPng(
-      {
-        type: 'div',
-        props: {
-          style: {
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: brandHex,
-            color: ink,
-            fontSize: 300,
-            fontWeight: 700,
-            fontFamily: hasCjk(initial) ? 'Noto Sans CJK SC' : 'Lato',
-          },
-          children: initial,
-        },
-      },
-      512,
-      512,
-      fonts,
-    );
-    for (const [name, size] of PNG_FAVICONS) {
-      const buf =
-        size === 512 ? png512 : await sharp(png512).resize(size, size, { fit: 'contain' }).png().toBuffer();
-      writeFileSync(join(PUBLIC, name), buf);
-      console.log(`  ✅ public/${name} (${size}×${size})`);
+  // Uploaded favicon sets own the brand. Never overwrite them, even with --force.
+  mkdirSync(join(PUBLIC, 'favicon'), { recursive: true });
+  const hasUploadedFavicons = existsSync(join(PUBLIC, 'favicon/favicon.ico'));
+  if (!hasUploadedFavicons) {
+    // 1. favicon.svg — handwritten SVG (browser renders the <text> with its own
+    //    system fonts; no font embedding needed at this size).
+    const svgHash = cacheKey('favicon.svg', brandHex, initial);
+    if (fresh('favicon.svg', svgHash, ['favicon/favicon.svg'])) {
+      writeFileSync(
+        join(PUBLIC, 'favicon/favicon.svg'),
+        `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="${brandHex}"/><text x="32" y="43" font-family="system-ui, -apple-system, 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif" font-size="34" font-weight="700" fill="${ink}" text-anchor="middle">${escapeXmlText(initial)}</text></svg>\n`,
+      );
+      manifest['favicon.svg'] = svgHash;
+      console.log('  ✅ public/favicon/favicon.svg');
     }
-    manifest['favicon-png'] = pngHash;
+
+    // 2. PNG favicons — one 512px satori render, sharp-resized per size.
+    const pngHash = cacheKey('favicon-png', brandHex, initial);
+    if (
+      fresh(
+        'favicon-png',
+        pngHash,
+        PNG_FAVICONS.map(([n]) => n),
+      )
+    ) {
+      const fonts = await fontsFor(initial);
+      const png512 = await renderPng(
+        {
+          type: 'div',
+          props: {
+            style: {
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: brandHex,
+              color: ink,
+              fontSize: 300,
+              fontWeight: 700,
+              fontFamily: hasCjk(initial) ? 'Noto Sans CJK SC' : 'Lato',
+            },
+            children: initial,
+          },
+        },
+        512,
+        512,
+        fonts,
+      );
+      for (const [name, size] of PNG_FAVICONS) {
+        const buf =
+          size === 512
+            ? png512
+            : await sharp(png512).resize(size, size, { fit: 'contain' }).png().toBuffer();
+        writeFileSync(join(PUBLIC, name), buf);
+        console.log(`  ✅ public/${name} (${size}×${size})`);
+      }
+      manifest['favicon-png'] = pngHash;
+    }
+  } else {
+    console.log('  Keeping uploaded public/favicon/ icons.');
   }
 
   // 3. hero.webp — 1200×630 brand gradient + site name (the default og:image).
@@ -263,7 +281,10 @@ async function main() {
       fonts,
     );
     mkdirSync(join(PUBLIC, 'images'), { recursive: true });
-    writeFileSync(join(PUBLIC, 'images/hero.webp'), await sharp(png).webp({ quality: 90 }).toBuffer());
+    writeFileSync(
+      join(PUBLIC, 'images/hero.webp'),
+      await sharp(png).webp({ quality: 90 }).toBuffer(),
+    );
     manifest['hero.webp'] = heroHash;
     console.log('  ✅ public/images/hero.webp (1200×630)');
   }
@@ -277,8 +298,8 @@ async function main() {
   const manifestJsonPath = join(PUBLIC, 'manifest.json');
   const manifestJson = JSON.parse(readFileSync(manifestJsonPath, 'utf8'));
   const WANTED_ICONS = [
-    { src: '/android-chrome-192x192.png', sizes: '192x192', type: 'image/png' },
-    { src: '/android-chrome-512x512.png', sizes: '512x512', type: 'image/png' },
+    { src: '/favicon/android-chrome-192x192.png', sizes: '192x192', type: 'image/png' },
+    { src: '/favicon/android-chrome-512x512.png', sizes: '512x512', type: 'image/png' },
   ];
   let manifestChanged = false;
   if ((manifestJson.theme_color ?? '').toLowerCase() !== brandHex.toLowerCase()) {

@@ -11,6 +11,8 @@
  * Pages should wrap themselves in LocaleLayout (which wraps this), not call this directly.
  */
 import '~/styles/globals.css';
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { site, siteUrl } from '~/config/site';
 import { defaultLocale, locales, OG_LOCALE_MAP, type Locale } from '~/i18n/routing';
 import { organizationJsonLd } from '~/lib/seo';
@@ -116,17 +118,12 @@ const gscVerification = import.meta.env.PUBLIC_GSC_VERIFICATION as string | unde
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    {/* This repo ships NO favicon set on purpose: public/favicon*,
-        apple-touch-icon.png and android-chrome-*.png are absent so nobody
-        deploys another project's brand mark. The wiring below is kept intact —
-        run `pnpm gen-assets` once and it writes the whole set from the live
-        theme colour, after which these tags resolve. Until then the requests
-        404 silently (check-links skips asset extensions). favicon.ico is never
-        emitted (sharp cannot write ICO); the browser's default /favicon.ico
-        probe 404s, which is invisible. */}
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    {/* Only reference files present in the shared favicon directory. */}
+    {existsSync(resolve('public/favicon/favicon.svg')) && <link rel="icon" href="/favicon/favicon.svg" type="image/svg+xml" />}
+    {existsSync(resolve('public/favicon/favicon.ico')) && <link rel="icon" href="/favicon/favicon.ico" sizes="any" />}
+    {existsSync(resolve('public/favicon/favicon-32x32.png')) && <link rel="icon" href="/favicon/favicon-32x32.png" type="image/png" sizes="32x32" />}
+    {existsSync(resolve('public/favicon/favicon-16x16.png')) && <link rel="icon" href="/favicon/favicon-16x16.png" type="image/png" sizes="16x16" />}
+    {existsSync(resolve('public/favicon/apple-touch-icon.png')) && <link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png" />}
     <link rel="manifest" href="/manifest.json" />
     <link rel="alternate" type="application/rss+xml" title={site.name} href="/rss.xml" />
     <meta name="generator" content={Astro.generator} />

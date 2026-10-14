@@ -1307,7 +1307,10 @@ describe('apply-template CLI bilingual UI (--lang + interactive language questio
     expect(t.clearedArticles(1, false)).toContain('1 demo article under');
     expect(t.clearedArticles(2, false)).toContain('2 demo articles under');
     expect(t.clearedArticles(1, true)).toContain('Would remove');
-    expect(t.scaffoldCreated(1)).toContain('1 scaffold article (');
-    expect(t.scaffoldCreated(3)).toContain('3 scaffold articles (');
+    // scaffoldCreated counts BOTH files a category receives (the scaffold
+    // article and the inert landing-page stub), so its noun is "file". The
+    // singular/plural logic is still the thing under test.
+    expect(t.scaffoldCreated(1)).toContain('1 scaffold file (');
+    expect(t.scaffoldCreated(3)).toContain('3 scaffold files (');
   });
 });

@@ -133,7 +133,7 @@ const en = {
   keptFilesWarn: (n: number, names: string) =>
     `   ⚠️  Kept ${n} file(s) that are NOT demo content — they never mention the demo game (${names}). Delete them yourself if unwanted:`,
   scaffoldCreated: (n: number) =>
-    `   📄 Created ${n} scaffold article${n === 1 ? '' : 's'} (one per category, en/)`,
+    `   📄 Created ${n} scaffold file${n === 1 ? '' : 's'} (2 per category, en/: one article + one landing-page stub)`,
 
   nextStepsHeader: '📌 Remaining tasks (see docs/apply-template.md):',
   nextIcons1: '   • Generate your icon set — this repo ships none (no borrowed brand marks).',
@@ -259,7 +259,7 @@ const zh: CliStrings = {
     `   🖼️  ${dry ? '将删除' : '已删除'} ${n} 个 demo 资产文件(封面/画廊/内文图/public token,按文件名删除)`,
   keptFilesWarn: (n, names) =>
     `   ⚠️  保留了 ${n} 个「非 demo 内容」的文件 — 它们从未提到 demo 游戏(${names})。若不需要请自行删除:`,
-  scaffoldCreated: (n) => `   📄 已创建 ${n} 篇脚手架文章(每个所选栏目一篇,en/)`,
+  scaffoldCreated: (n) => `   📄 已创建 ${n} 个脚手架文件(每个所选栏目 2 个:1 篇文章 + 1 个栏目页骨架,en/)`,
 
   nextStepsHeader: '📌 剩余任务(详见 docs/apply-template.md):',
   nextIcons1: '   • 生成你自己的图标 — 本仓库不带图标(不夹带别人的品牌标记)。',

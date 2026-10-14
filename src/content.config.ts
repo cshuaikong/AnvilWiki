@@ -22,7 +22,20 @@ import { CONTENT_TYPES } from './config/navigation';
  * absolute og:image URL, read `.src` and prefix with `siteUrl`.
  */
 const wiki = defineCollection({
-  loader: glob({ pattern: '**/*.mdx', base: './src/content/wiki' }),
+  // `index.mdx` is the category LANDING page, not an article. It is excluded
+  // HERE, at the loader, and loaded by the `categoryIndex` collection below —
+  // so every article consumer is correct with no per-call-site predicate: the
+  // article collection is read by 17 `getCollection('wiki')` call sites
+  // (recent, RSS, llms.txt, tag pages, related articles, the sitemap feed),
+  // and a "skip the hub" filter sprinkled across all of them is exactly the
+  // kind of scattered invariant this repo makes impossible instead.
+  //
+  // Consequence, all of it intended: no `/bosses/index/` URL is ever built,
+  // the landing page never lists itself as a card, and it never appears in
+  // recent/RSS/tags/related. The URL stays the folder path (`/bosses/`).
+  //
+  // `pattern` accepts an array and tinyglobby honours `!` negation.
+  loader: glob({ pattern: ['**/*.mdx', '!**/index.mdx'], base: './src/content/wiki' }),
   schema: ({ image }) =>
     z.object({
       title: z.string().max(80),
@@ -134,4 +147,32 @@ const wiki = defineCollection({
     }),
 });
 
-export const collections = { wiki };
+/**
+ * Category landing pages — `src/content/wiki/<locale>/<category>/index.mdx`.
+ *
+ * This is the prose for the category URL itself (`/bosses/`, `/ja/bosses/`).
+ * A category WITHOUT this file renders exactly the card grid it always did, so
+ * the feature is purely additive and per-category: nothing switches modes.
+ *
+ * Frontmatter is deliberately minimal — the H1 and meta description still come
+ * from the locale JSON's `overview.<category>` (one source per value, no
+ * second copy to drift). Only the publish flags and an optional freshness
+ * stamp are read here.
+ */
+const categoryIndex = defineCollection({
+  loader: glob({ pattern: '**/index.mdx', base: './src/content/wiki' }),
+  schema: z.object({
+    /**
+     * Landing page present but not ready: visible in `pnpm dev`, excluded from
+     * the production build (the category then renders the plain list again).
+     * Mirrors the article `draft` flag; also honoured by the sitemap scan in
+     * astro.config.ts so a draft index cannot keep an empty category in the
+     * sitemap.
+     */
+    draft: z.boolean().default(false),
+    /** Optional freshness stamp for the sitemap `lastmod` of the category URL. */
+    lastModified: z.coerce.date().optional(),
+  }),
+});
+
+export const collections = { wiki, categoryIndex };

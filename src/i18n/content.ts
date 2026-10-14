@@ -16,11 +16,45 @@
  */
 
 import { getCollection, type CollectionEntry } from 'astro:content';
-import { defaultLocale, type Locale } from './routing';
+import { defaultLocale, isLocale, type Locale } from './routing';
 import { slugifyTag } from '~/lib/url';
 import { newestFirst, parseEntryId, selectRelatedEntries } from '~/lib/content-utils';
 
 export type WikiEntry = CollectionEntry<'wiki'>;
+
+/** Category landing page — src/content/wiki/<locale>/<category>/index.mdx. */
+export type CategoryIndexEntry = CollectionEntry<'categoryIndex'>;
+
+/**
+ * Landing-body id shape. The glob loader's default `generateId` slugs the entry
+ * path AND collapses a trailing `/index` to its directory, so
+ * `src/content/wiki/en/bosses/index.mdx` arrives as the id `en/bosses` — the id
+ * is the category path itself. The optional `/index` alternative is accepted so
+ * the match survives an Astro version that keeps it (and ids are normalised to
+ * extension-free before matching, like every other id in this file).
+ */
+const CATEGORY_INDEX_ID_RE = /^([^/]+)\/([^/]+)(?:\/index)?$/;
+
+/** MDX comments produce no output — stripped before asking "does this render?". */
+const MDX_COMMENT_RE = /\{\/\*[\s\S]*?\*\/\}/g;
+
+/**
+ * True when a landing body actually RENDERS something.
+ *
+ * "The file exists" is the wrong question. A freshly scaffolded landing page is
+ * a comment-only stub: it renders nothing, and counting it as content would
+ * switch OFF the thin-content noindex on an otherwise empty category page —
+ * exactly the leak that rule exists to prevent (a real incident: an empty
+ * /starships category page got indexed). So the stub stays inert until real
+ * prose is written, which is what "index defaults to the list page" has to mean.
+ *
+ * The strip is not a parser and does not need to be: astro.config.ts asks the
+ * same question of the raw file with the same regex, and the two sides must
+ * agree or the page and the sitemap disagree about coverage.
+ */
+function hasLandingProse(entry: CategoryIndexEntry): boolean {
+  return (entry.body ?? '').replace(MDX_COMMENT_RE, '').trim().length > 0;
+}
 
 export interface ResolvedEntry {
   entry: WikiEntry;
@@ -34,10 +68,13 @@ export interface ResolvedEntry {
  * Draft visibility rule: drafts are visible in dev (author preview) but
  * excluded from the production build everywhere (pages, lists, recent,
  * related, hreflang, sitemap).
+ *
+ * Structural (not `WikiEntry`) because the categoryIndex collection carries the
+ * same `data.draft` flag — both collections share one publish rule.
  */
 const isDev = import.meta.env.DEV;
 
-function isPublished(e: WikiEntry): boolean {
+function isPublished(e: { data: { draft: boolean } }): boolean {
   return !e.data.draft || isDev;
 }
 
@@ -124,10 +161,53 @@ export async function localesForEntry(category: string, slug: string): Promise<L
 }
 
 /**
- * All locales that have at least one published article in a category.
- * Drives the list-page hreflang alternates: declaring a locale whose list
- * page is the empty state would advertise a thin-content page (and must
- * mirror the sitemap-side coverage in astro.config.ts).
+ * Category landing bodies (`<locale>/<category>/index.mdx`).
+ *
+ * They live in their own collection (see content.config.ts) so they are never
+ * articles — which also means an article-only scan cannot see them.
+ * Returns the entry for one (category, locale), or null when the category has
+ * no landing page: that is the ONLY difference between a plain list page and a
+ * landing page, so callers never branch on a separate "mode".
+ */
+export async function getCategoryIndex(
+  category: string,
+  locale: Locale,
+): Promise<CategoryIndexEntry | null> {
+  for (const entry of await getCollection('categoryIndex')) {
+    if (!isPublished(entry)) continue;
+    const m = CATEGORY_INDEX_ID_RE.exec(entry.id.replace(/\.mdx$/, ''));
+    if (m && m[1] === locale && m[2] === category) {
+      // An inert stub is reported as "no landing page": callers then get the
+      // plain list page, which is the documented default.
+      return hasLandingProse(entry) ? entry : null;
+    }
+  }
+  return null;
+}
+
+/**
+ * Locales that ship a category landing body with real prose. Exported so the
+ * sitemap side (astro.config.ts categoryCoverage) can be checked against it —
+ * the two MUST agree, or the page and the sitemap disagree about hreflang.
+ */
+export async function localesWithCategoryIndex(category: string): Promise<Locale[]> {
+  const found = new Set<Locale>();
+  for (const entry of await getCollection('categoryIndex')) {
+    if (!isPublished(entry) || !hasLandingProse(entry)) continue;
+    const m = CATEGORY_INDEX_ID_RE.exec(entry.id.replace(/\.mdx$/, ''));
+    if (m && m[2] === category && isLocale(m[1])) found.add(m[1]);
+  }
+  return Array.from(found);
+}
+
+/**
+ * All locales whose list page for this category is a REAL page: at least one
+ * published article, or a published landing body.
+ *
+ * Drives the list-page hreflang alternates: declaring a locale whose list page
+ * is the empty state would advertise a thin-content page (and must mirror the
+ * sitemap-side coverage in astro.config.ts). A landing body counts because that
+ * page has prose on it — it is not the empty state this rule exists for.
  */
 export async function localesForCategory(category: string): Promise<Locale[]> {
   const all = await getCollection('wiki');
@@ -138,6 +218,7 @@ export async function localesForCategory(category: string): Promise<Locale[]> {
       found.add(parsed.locale);
     }
   }
+  for (const l of await localesWithCategoryIndex(category)) found.add(l);
   return Array.from(found);
 }
 

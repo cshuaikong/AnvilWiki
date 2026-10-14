@@ -9,6 +9,9 @@ import { site } from '~/config/site';
 import { type Locale, defaultLocale, locales, LOCALE_LABELS } from '~/i18n/routing';
 import { getUi } from '~/i18n/ui';
 import { localizePath } from '~/lib/url';
+import { getDynamicNavigation } from '~/lib/navigation';
+import NavigationDropdown from './NavigationDropdown.astro';
+import SiteLogo from '~/components/shared/SiteLogo.astro';
 import ThemeToggle from './ThemeToggle.astro';
 import LanguageSwitcher from './LanguageSwitcher.astro';
 import SearchButton from './SearchButton.astro';
@@ -26,6 +29,7 @@ interface Props {
 const { locale, currentPath, availableLocales } = Astro.props;
 const ui = getUi(locale);
 const nav: Record<string, string> = ui.nav as Record<string, string>;
+const groups = await getDynamicNavigation(locale, nav);
 
 const headerLocales = availableLocales ?? locales;
 
@@ -48,33 +52,16 @@ const samePagePathFor = (loc: Locale) => {
       class="flex items-center gap-2 font-bold text-foreground"
       aria-label={site.name}
     >
-      <Icon name="lucide:hammer" class="h-6 w-6 text-nav" />
+      <SiteLogo />
       <span class="hidden sm:inline">{site.shortName}</span>
     </a>
 
     {/* Desktop nav */}
     <nav class="hidden flex-1 items-center gap-1 md:flex">
       {
-        NAVIGATION_CONFIG.map((item) => {
-          const path = localizePath(item.path, locale);
-          // `path` ends with "/" (trailingSlash:'always') — appending again
-          // would produce "//" and silently break child-page highlighting.
-          const activePrefix = path.endsWith('/') ? path : path + '/';
-          const isActive = currentPath === path || currentPath.startsWith(activePrefix);
-          return (
-            <a
-              href={path}
-              class:list={[
-                'rounded-md px-3 py-1.5 text-sm font-medium transition',
-                isActive
-                  ? 'bg-muted text-nav'
-                  : 'text-foreground/70 hover:bg-muted hover:text-foreground',
-              ]}
-            >
-              {nav[item.key] ?? item.key}
-            </a>
-          );
-        })
+        groups.map((group, index) => (
+          <NavigationDropdown group={group} locale={locale} currentPath={currentPath} alignEnd={index >= groups.length - 2} />
+        ))
       }
     </nav>
 
