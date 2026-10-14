@@ -111,8 +111,9 @@ describe('/faq pages ↔ en.json home.faq contract', () => {
 
   test('getHomeFaq() serves the en.json namespace (and deep-merges partial locales)', () => {
     expect(getHomeFaq('en')).toEqual(en.home.faq);
-    // ja.json carries its own faq; if a key were dropped there, getUi()'s
-    // deep-merge must transparently fall back to en (never undefined).
+    // A locale shipping no messages of its own must deep-merge onto en, never
+    // undefined — that fallback is what backs this repo now that only `en`
+    // ships (`ja` below is simply an unconfigured locale code).
     const jaFaq = getHomeFaq('ja');
     expect(jaFaq.title).toBeTypeOf('string');
     expect(jaFaq.title.length).toBeGreaterThan(0);
