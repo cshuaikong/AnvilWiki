@@ -1,6 +1,14 @@
 import { describe, it, expect } from 'vitest';
+import { defaultLocale, locales, type Locale } from '~/i18n/routing';
 import { videoObjectJsonLd, urlListJsonLd, imageObjectJsonLd } from '~/lib/seo';
 import { slugifyTag, tagPath, tagsPath, recentPath } from '~/lib/url';
+
+/**
+ * The site's second locale, when it has one (same helper as url.test.ts).
+ * Prefix assertions need a real non-default locale; hardcoding `'ja'` broke
+ * them on a single-locale fork.
+ */
+const second: Locale | undefined = locales.find((l) => l !== defaultLocale);
 
 describe('slugifyTag', () => {
   it('lowercases and hyphenates whitespace', () => {
@@ -25,15 +33,15 @@ describe('slugifyTag', () => {
 });
 
 describe('tag/recent URL helpers', () => {
-  it('builds unprefixed English paths', () => {
-    expect(tagsPath('en')).toBe('/tags/');
-    expect(tagPath('fire-boss', 'en')).toBe('/tags/fire-boss/');
-    expect(recentPath('en')).toBe('/recent/');
+  it('builds unprefixed paths for the default locale', () => {
+    expect(tagsPath(defaultLocale)).toBe('/tags/');
+    expect(tagPath('fire-boss', defaultLocale)).toBe('/tags/fire-boss/');
+    expect(recentPath(defaultLocale)).toBe('/recent/');
   });
-  it('prefixes non-default locales', () => {
-    expect(tagsPath('ja')).toBe('/ja/tags/');
-    expect(tagPath('fire-boss', 'ja')).toBe('/ja/tags/fire-boss/');
-    expect(recentPath('ja')).toBe('/ja/recent/');
+  it.skipIf(!second)('prefixes non-default locales', () => {
+    expect(tagsPath(second!)).toBe(`/${second}/tags/`);
+    expect(tagPath('fire-boss', second!)).toBe(`/${second}/tags/fire-boss/`);
+    expect(recentPath(second!)).toBe(`/${second}/recent/`);
   });
 });
 

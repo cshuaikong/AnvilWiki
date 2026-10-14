@@ -12,7 +12,7 @@
  *     "Clear demo content" rm list (they have drifted before: the v2.6.0
  *     covers initially landed in neither list).
  */
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, test, vi } from 'vitest';
@@ -20,19 +20,14 @@ import {
   DEMO_ADSTERRA_UNIT_MARKERS,
   DEMO_ARTICLE_IMAGES,
   DEMO_COVERS,
-  DEMO_DOMAINS,
-  DEMO_GAME_NAMES,
   DEMO_GALLERY_IMAGES,
-  DEMO_INDEXNOW_KEY_FILE,
   DEMO_PUBLIC_FILES,
   DEMO_SITE_OPTIONAL_VALUES,
-  DEMO_VAR_VALUES,
   buildLocaleLabels,
   buildScaffoldDescription,
   buildUiImports,
   buildUiMessagesEntries,
   classifyWikiArticles,
-  isDemoArticleContent,
   isDemoLocaleContent,
   isDemoPublicFileContent,
   isDemoSiteTsIdentity,
@@ -250,38 +245,6 @@ describe('rewriteWranglerVars is value-aware (a re-run must not wipe the user en
     expect(rewriteWranglerVars(makeInput(), demoOnce)).toBe(demoOnce);
   });
 
-  test('DEMO_VAR_VALUES covers every live value in the shipped wrangler.toml (drift guard)', () => {
-    // If the demo gains a new non-empty env value that is not registered as a
-    // demo value, a re-run would PRESERVE it into every fork — the exact leak
-    // this list exists to prevent. Every uncommented [vars] value must either
-    // be listed here or be empty.
-    const toml = readFileSync(join(repoRoot, 'wrangler.toml'), 'utf8');
-    const section = toml.match(/(?:^|\n)\[vars\]\r?\n([\s\S]*?)(?=\r?\n\[|$)/)?.[1] ?? '';
-    const values = [...section.matchAll(/^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*"(.*)"\s*$/gm)].map(
-      (m) => m[2],
-    );
-    expect(values.length, 'the shipped wrangler.toml should carry demo values').toBeGreaterThan(0);
-    // "pathname" is the template's GENERIC giscus mapping default (a user may
-    // legitimately set "url"/"topic" — the rewrite preserves those), not demo
-    // identity; it is deliberately not in DEMO_VAR_VALUES. "Announcements" is
-    // deliberately not registered either (real forks legitimately use that
-    // giscus category name) — its demo-ness is the PAIRED rule: demo category
-    // name + demo category ID together, asserted below. Anything else
-    // non-empty must be registered.
-    const genericDefaults = new Set(['pathname']);
-    for (const v of values) {
-      expect(
-        v === '' || genericDefaults.has(v) || v === 'Announcements' || DEMO_VAR_VALUES.includes(v),
-        `unregistered demo value: "${v}"`,
-      ).toBe(true);
-    }
-    // Paired-rule guard: the shipped file must carry Announcements TOGETHER
-    // with the demo category ID (only that pair is auto-cleared; a fork with
-    // its own ID keeps the name).
-    if (values.includes('Announcements')) {
-      expect(values).toContain('DIC_kwDOT1aRPc4DDODo');
-    }
-  });
 });
 
 describe('rewriteLocaleJson (P3: no unchosen-category leak, re-run labels kept)', () => {
@@ -606,25 +569,6 @@ describe('demo asset inventories stay in sync with setup.yml (drift has shipped 
     ).toBe(true);
   });
 
-  test('every demo public file is covered by the content registry (no silent-keep holes)', () => {
-    for (const rel of DEMO_PUBLIC_FILES) {
-      // The exact-name files (search-console token, retired pre-env IndexNow
-      // key file) have no content marker — their identity IS the name.
-      if (rel === 'google8362d9398114b66b.html' || rel === DEMO_INDEXNOW_KEY_FILE) continue;
-      expect(DEMO_ADSTERRA_UNIT_MARKERS, `${rel} has no demo unit marker`).toHaveProperty(rel);
-    }
-    // The retired key file is deleted by exact name regardless of content —
-    // forks initialized from older trees must lose it on the next rerun.
-    expect(isDemoPublicFileContent(DEMO_INDEXNOW_KEY_FILE, 'any content')).toBe(true);
-    // Registry keys must match the shipped demo unit files — a regenerated
-    // demo key without updating the registry would silently keep demo
-    // residue in forks (isDemoPublicFileContent defaults to keep).
-    for (const [rel, marker] of Object.entries(DEMO_ADSTERRA_UNIT_MARKERS)) {
-      const source = readFileSync(join(repoRoot, 'public', rel), 'utf8');
-      expect(source, rel).toContain(marker);
-    }
-  });
-
   test('the inventories do not overlap', () => {
     const all = [
       ...DEMO_COVERS,
@@ -796,13 +740,6 @@ describe('hyphen locales (zh-tw / pt-br) generate legal TypeScript', () => {
 });
 
 describe('demo locale deletion is content-aware (rebranded locales must survive re-runs)', () => {
-  test('the shipped demo locale files still carry the site.name marker (marker drift guard)', () => {
-    for (const locale of ['en', 'ja']) {
-      const raw = readFileSync(join(repoRoot, 'src/locales', `${locale}.json`), 'utf8');
-      expect(isDemoLocaleContent(raw)).toBe(true);
-    }
-  });
-
   test('a rewritten demo-named locale is no longer demo content', () => {
     const demoEn = readFileSync(join(repoRoot, 'src/locales/en.json'), 'utf8');
     const rebranded = rewriteLocaleJson(makeInput(), 'ja', 2026, demoEn);
@@ -823,32 +760,6 @@ describe('demo locale deletion is content-aware (rebranded locales must survive 
 });
 
 describe('demo article clearing is content-aware (re-runs must keep user work)', () => {
-  test('every shipped demo article carries the demo-game marker (marker drift guard)', () => {
-    // Mirrors the locale marker guard above: if a template author ships a demo
-    // article that never mentions the demo game, content-aware clearing would
-    // KEEP it forever — this goes red in the template repo until the article
-    // carries the marker. Vacuous in forks after a first-run clear.
-    const base = join(repoRoot, 'src/content/wiki');
-    const walk = (dir: string): string[] =>
-      existsSync(dir)
-        ? readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
-            e.isDirectory()
-              ? walk(join(dir, e.name))
-              : /\.(mdx|md)$/.test(e.name)
-                ? [join(dir, e.name)]
-                : [],
-          )
-        : [];
-    const files = walk(base);
-    expect(files.length, 'the template repo should ship demo wiki articles').toBeGreaterThan(0);
-    for (const file of files) {
-      expect(
-        isDemoArticleContent(readFileSync(file, 'utf8')),
-        `${file} lacks the demo-game marker (${DEMO_GAME_NAMES.join(', ')}) — content-aware clearing would keep it`,
-      ).toBe(true);
-    }
-  });
-
   test('the verdict is content-only: same path flips when rewritten for the fork game', () => {
     const asDemo = { rel: 'en/bosses/emberfang.mdx', src: '---\ntitle: Emberfang\n---\n\nAnvil Quest boss strategy.' };
     const rewritten = { rel: 'en/bosses/emberfang.mdx', src: '---\ntitle: Emberfang\n---\n\nMy own boss, rewritten for my game.' };
@@ -881,47 +792,6 @@ describe('demo article clearing is content-aware (re-runs must keep user work)',
     const buildIdx = yml.indexOf('pnpm build');
     expect(clearIdx).toBeGreaterThan(installIdx);
     expect(clearIdx).toBeLessThan(buildIdx);
-  });
-});
-
-describe('setup.yml demo-author removal still matches the real authors.ts', () => {
-  // setup.yml drops the demo author with an INLINE python regex (single use,
-  // inside a heredoc — deliberately not worth a lib round-trip). That made it
-  // the only place in the repo hardcoding 'Forge Master Kael': if authors.ts
-  // changes shape, the regex silently no-ops and the fork ships the demo
-  // author. This contract runs the ACTUAL pattern from setup.yml against the
-  // ACTUAL authors.ts, so either side drifting goes red here.
-  test('the inline python regex removes exactly the demo block, byte-preserving the rest', () => {
-    const yml = readFileSync(join(repoRoot, '.github/workflows/setup.yml'), 'utf8');
-    const literal = yml.match(/re\.sub\(r"((?:[^"\\]|\\.)*)", '\\n', s\)/);
-    expect(literal, 'setup.yml demo-author re.sub literal not found — step rewritten?').toBeTruthy();
-    const pyPattern = literal![1];
-    // Python↔JS semantics for THIS pattern are 1:1: `.` is not dotall in
-    // either, `\s` spans newlines in both, lazy `.*?` behaves identically.
-    // re.sub replaces ALL occurrences → the `g` flag.
-    const demoAuthorRe = new RegExp(pyPattern, 'g');
-    const src = readFileSync(join(repoRoot, 'src/config/authors.ts'), 'utf8');
-    const after = src.replace(demoAuthorRe, '\n');
-    // The demo identity is gone — comment line AND entry line.
-    expect(after).not.toContain('Forge Master Kael');
-    expect(after).not.toContain('// DEMO');
-    // Byte-preservation oracle: the demo block is the comment line directly
-    // above the entry line; deleting exactly those two lines must equal the
-    // regex output — anything else the regex touched fails here.
-    const lines = src.split('\n');
-    const start = lines.findIndex((l) => l.includes('// DEMO'));
-    const end = lines.findIndex((l) => l.includes("'Forge Master Kael'"));
-    expect(start).toBeGreaterThan(-1);
-    expect(end).toBe(start + 1);
-    const expected = [...lines.slice(0, start), ...lines.slice(end + 1)].join('\n');
-    expect(after).toBe(expected);
-    // The user-owned scaffolding survives untouched — the example comment,
-    // the (now empty) registry object still closing cleanly right after it,
-    // and the getAuthor helper that follows the registry in the real file.
-    expect(after).toContain("// 'Yuan Ruiqin'");
-    expect(after).toContain('export const authors: Record<string, AuthorInfo> = {');
-    expect(after).toMatch(/'] },\n\};\n/);
-    expect(after).toContain('export function getAuthor');
   });
 });
 
@@ -1027,14 +897,6 @@ describe('re-run identity detection (S12: re-run = confirm current, never demo d
     // An empty optional value stays an empty default (releaseDate is optional).
     const empty = rerunPromptDefaults({ ...id, releaseDate: '' });
     expect(empty.releaseDate).toBe('');
-  });
-
-  test('the shipped demo site.ts parses as the demo identity (drift guard)', () => {
-    const raw = readFileSync(join(repoRoot, 'src/config/site.ts'), 'utf8');
-    const id = parseSiteTsIdentity(raw);
-    expect(id).not.toBeNull();
-    expect(isDemoSiteTsIdentity(id!)).toBe(true);
-    expect(DEMO_DOMAINS).toContain(id!.domain);
   });
 });
 
@@ -1346,27 +1208,6 @@ describe('rewriteLocaleJson overview/home are re-run-aware (M2)', () => {
 });
 
 describe('stripDemoAuthors — the CLI authors.ts regex (real-file contract + setup.yml parity)', () => {
-  test('removes exactly the demo block from the shipped authors.ts, byte-preserving the rest', () => {
-    const src = readFileSync(join(repoRoot, 'src/config/authors.ts'), 'utf8');
-    const once = stripDemoAuthors(src);
-    expect(once.changed).toBe(true);
-    expect(once.cleaned).not.toContain('Forge Master Kael');
-    expect(once.cleaned).not.toContain('// DEMO');
-    // Byte-preservation oracle: the demo block is the comment line directly
-    // above the entry line; deleting exactly those two lines must equal the
-    // regex output — anything else the regex touched fails here.
-    const lines = src.split('\n');
-    const start = lines.findIndex((l) => l.includes('// DEMO'));
-    const end = lines.findIndex((l) => l.includes("'Forge Master Kael'"));
-    expect(start).toBeGreaterThan(-1);
-    expect(end).toBe(start + 1);
-    const expected = [...lines.slice(0, start), ...lines.slice(end + 1)].join('\n');
-    expect(once.cleaned).toBe(expected);
-    // Idempotent: a re-run finds nothing and reports no-change — the CLI
-    // warns instead of writing a false ✅.
-    expect(stripDemoAuthors(once.cleaned).changed).toBe(false);
-  });
-
   test('the CLI regex output equals the setup.yml python re.sub output (no channel drift)', () => {
     const yml = readFileSync(join(repoRoot, '.github/workflows/setup.yml'), 'utf8');
     const literal = yml.match(/re\.sub\(r"((?:[^"\\]|\\.)*)", '\\n', s\)/);

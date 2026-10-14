@@ -14,6 +14,14 @@ import {
 import { fallbackDetailPaths } from '~/lib/fallback-paths';
 import { site } from '~/config/site';
 import { authors } from '~/config/authors';
+import { defaultLocale, locales, type Locale } from '~/i18n/routing';
+
+/**
+ * The site's second locale, when it has one (same helper as url.test.ts).
+ * Non-default-locale assertions need a real one to talk about; hardcoding
+ * `'ja'` broke them on a single-locale fork.
+ */
+const second: Locale | undefined = locales.find((l) => l !== defaultLocale);
 
 /** Repo-root-relative source text (contract-test helper, handbook.test.ts style). */
 const src = (rel: string) => readFileSync(fileURLToPath(new URL(`../${rel}`, import.meta.url)), 'utf8');
@@ -121,21 +129,24 @@ describe('SEO helpers', () => {
       expect(json.itemListElement[0].item).toMatch(/\/$/);
     });
 
-    it('emits the localized Home item with a trailing slash for non-default locales', () => {
-      const json = breadcrumbJsonLd({
-        category: 'bosses',
-        categoryLabel: 'ボス一覧',
-        title: 'エンバーファング攻略',
-        slug: 'emberfang',
-        locale: 'ja',
-      });
-      expect(json.itemListElement[0].item).toMatch(/\/ja\/$/);
-    });
+    it.skipIf(!second)(
+      'emits the localized Home item with a trailing slash for non-default locales',
+      () => {
+        const json = breadcrumbJsonLd({
+          category: 'bosses',
+          categoryLabel: 'ボス一覧',
+          title: 'エンバーファング攻略',
+          slug: 'emberfang',
+          locale: second!,
+        });
+        expect(json.itemListElement[0].item).toMatch(new RegExp(`/${second}/$`));
+      },
+    );
   });
 
   describe('simpleBreadcrumbJsonLd', () => {
     it('emits the Home item with a trailing slash for every locale', () => {
-      for (const locale of ['en', 'ja'] as const) {
+      for (const locale of locales) {
         const json = simpleBreadcrumbJsonLd({
           pageLabel: 'All Bosses',
           path: '/bosses/',
@@ -193,8 +204,11 @@ describe('SEO helpers', () => {
     });
 
     it('skips the suffix when the title already carries the game name', () => {
-      const t = pageTitle('Anvil Quest Boss Guide');
-      expect(t).toBe('Anvil Quest Boss Guide');
+      // Read the name from config, never a literal: a rebranded fork failed
+      // here because the stale literal no longer matched site.game.name, so
+      // pageTitle correctly appended the suffix and this assertion blamed it.
+      const t = pageTitle(`${site.game.name} Boss Guide`);
+      expect(t).toBe(`${site.game.name} Boss Guide`);
     });
 
     it('switches to the short suffix for long titles (>50 chars)', () => {
@@ -205,9 +219,10 @@ describe('SEO helpers', () => {
   });
 
   describe('fallbackDetailPaths', () => {
-    const locales = ['en', 'ja'] as const;
     // Coverage shape mirrors astro.config's localeCoverage: "cat/slug" →
-    // locales that really have a published MDX.
+    // locales that really have a published MDX. Fixture data — the locale codes
+    // in these Sets describe a hypothetical content set, not this repo's
+    // configured locales (those come from routing.ts above).
     const coverage = new Map<string, Set<string>>([
       // English-only article → /ja/ URL is a fallback page.
       ['bosses/stormcaller', new Set(['en'])],
@@ -222,26 +237,29 @@ describe('SEO helpers', () => {
       ['items/熔炉之心', new Set(['en'])],
     ]);
 
-    it('derives one path per non-default locale missing a translation of a default-locale article', () => {
-      expect(fallbackDetailPaths(coverage, locales, 'en')).toEqual([
-        '/ja/bosses/stormcaller',
-        '/ja/guides/nested/deep-slug',
-        '/ja/items/熔炉之心',
-      ]);
-    });
+    it.skipIf(!second)(
+      'derives one path per non-default locale missing a translation of a default-locale article',
+      () => {
+        expect(fallbackDetailPaths(coverage, locales, defaultLocale)).toEqual([
+          `/${second}/bosses/stormcaller`,
+          `/${second}/guides/nested/deep-slug`,
+          `/${second}/items/熔炉之心`,
+        ]);
+      },
+    );
 
     it('never emits paths for the default locale, translated slugs, or locale-owned articles', () => {
-      const paths = fallbackDetailPaths(coverage, locales, 'en');
-      expect(paths).not.toContain('/en/bosses/stormcaller');
-      expect(paths).not.toContain('/ja/bosses/emberfang');
-      expect(paths).not.toContain('/en/guides/ja-only');
+      const paths = fallbackDetailPaths(coverage, locales, defaultLocale);
+      expect(paths).not.toContain(`/${defaultLocale}/bosses/stormcaller`);
+      expect(paths).not.toContain(`/${defaultLocale}/guides/ja-only`);
+      if (second) expect(paths).not.toContain(`/${second}/bosses/emberfang`);
       // With a single locale there is nothing to fall back to.
-      expect(fallbackDetailPaths(coverage, ['en'], 'en')).toEqual([]);
+      expect(fallbackDetailPaths(coverage, [defaultLocale], defaultLocale)).toEqual([]);
     });
 
     it('is deterministic across calls (sorted keys, locales in order)', () => {
-      const a = fallbackDetailPaths(coverage, locales, 'en');
-      const b = fallbackDetailPaths(new Map(coverage), locales, 'en');
+      const a = fallbackDetailPaths(coverage, locales, defaultLocale);
+      const b = fallbackDetailPaths(new Map(coverage), locales, defaultLocale);
       expect(a).toEqual(b);
       expect(a).toEqual([...a].sort());
     });

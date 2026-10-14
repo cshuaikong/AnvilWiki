@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { defaultLocale } from '~/i18n/routing';
 import { parseEntryId, isPossiblyOutdated, selectRelatedEntries, estimateReadMinutes, STALE_AFTER_DAYS } from '~/lib/content-utils';
 
 describe('parseEntryId', () => {
@@ -11,8 +12,11 @@ describe('parseEntryId', () => {
   });
 
   it('strips the .mdx extension the glob loader includes in the id', () => {
-    expect(parseEntryId('ja/bosses/emberfang.mdx')).toEqual({
-      locale: 'ja',
+    // The locale only has to be one the repo actually declares — parseEntryId
+    // returns null for unknown codes, so hardcoding a second locale ('ja') made
+    // this fail on a single-locale fork. The point of the test is the .mdx strip.
+    expect(parseEntryId(`${defaultLocale}/bosses/emberfang.mdx`)).toEqual({
+      locale: defaultLocale,
       category: 'bosses',
       slug: 'emberfang',
     });

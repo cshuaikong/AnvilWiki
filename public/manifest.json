@@ -1,9 +1,9 @@
 {
-  "name": "Anvil Quest Wiki",
-  "short_name": "AQ Wiki",
-  "description": "Complete Anvil Quest wiki with boss guides, codes, and tier lists.",
+  "name": "Plane Crazy Wiki",
+  "short_name": "PlaneCrazy",
+  "description": "Complete Plane Crazy wiki with guides, codes, tier lists, and tips. Every page carries a last-verified date.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#f36716"
+  "theme_color": "#f97415"
 }
