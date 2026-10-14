@@ -1,0 +1,18 @@
+# ⚠️⚠️⚠️ FORKERS READ THIS FIRST ⚠️⚠️⚠️
+#
+# This wrangler.toml contains the DEMO SITE config (anvil.wiki).
+# The [vars] below point at PNGTRID/AnvilWiki's own GitHub Discussions.
+#
+# When you fork: EITHER
+#   (A) Edit the [vars] values below to your own (SITE_URL + GISCUS_*), OR
+#   (B) Delete this file (`git rm wrangler.toml && git commit`) and configure
+#       env vars in the Cloudflare dashboard instead.
+#
+# Why this matters: when wrangler.toml exists, it is the SOLE source of truth
+# for the Pages project's env — the Cloudflare dashboard's "Environment
+# variables" UI is completely IGNORED. If you config env in the dashboard but
+# leave this file here with these demo values, your build will use THESE
+# values, not yours.
+#
+# See docs/deployment.md for the full guide.
+# ⚠️⚠️⚠️ END FORKER WARNING ⚠️⚠️⚠️

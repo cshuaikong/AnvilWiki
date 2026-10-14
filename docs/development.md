@@ -29,6 +29,8 @@ pnpm check-i18n      # 加了 locale JSON key 后,看覆盖率报告
 改了 `.astro` 路由文件 → 必跑 build(getStaticPaths 的错误只在构建时暴露)。
 改了 workflow YAML → `python3 -c "import yaml; yaml.safe_load(open('<file>'))"`(v1.6 曾因 YAML 缩进断裂翻车)。
 
+`tests/workflows.test.ts` 会执行初始化流程中的 Python 脚本，优先使用 `python3`，Windows 可回退到 `python`；两者都不可用时才跳过行为测试。模板专用的 FORKER 警告保存在 `tests/fixtures/wrangler-forker-warning.toml`，不要求已初始化站点的实际配置仍保留 demo 警告。验证 CI 修复时，要确认这些行为测试实际执行，并等待 GitHub Actions 的结果。
+
 ## 2. 常见扩展模式
 
 ### 2.1 加一个 frontmatter 字段
