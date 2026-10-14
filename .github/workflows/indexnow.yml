@@ -61,6 +61,26 @@ jobs:
             exit 0
           fi
 
+          # New sites can be configured before their domain has DNS records.
+          # Skip only a missing DNS name; transient DNS errors still fail loudly.
+          dns_ready="$(SITE_TO_CHECK="$site_url" node --input-type=module <<'NODE'
+          import { lookup } from 'node:dns/promises';
+          const hostname = new URL(process.env.SITE_TO_CHECK).hostname;
+          try {
+            await lookup(hostname);
+            console.log('ready');
+          } catch (error) {
+            if (error.code !== 'ENOTFOUND') throw error;
+            console.log('pending');
+          }
+          NODE
+          )"
+          if [ "$dns_ready" = "pending" ]; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::[IndexNow] Skipped: $site_url has no DNS resolution yet. Connect the production domain; later successful main pushes will retry automatically."
+            exit 0
+          fi
+
           {
             echo "enabled=true"
             echo "site_url=$site_url"

@@ -319,6 +319,7 @@ curl -I https://<你的域名>/privacy-policy/
    - 优先读取仓库里的 `.indexnow-key`；没有时才兼容旧的 `INDEXNOW_KEY` Repository Variable；
    - 站点地址优先从 `wrangler.toml` 读取，其次从 `src/config/site.ts` 的 `domain` 推导；只有仓库配置无法解析时才兼容旧的 `SITE_URL` Repository Variable；
    - 如果 key 或站点地址都找不到，在 checkout/检测阶段就退出，不安装依赖，也不发送 IndexNow 请求；
+   - 如果域名尚无 DNS 解析，也在检测阶段跳过并显示 notice，避免建站期间每次推送都等待超时并发失败邮件；配置生产域名后，后续成功的 `main` push 会自动重新检测。临时 DNS 故障仍会报错，不会吞掉；
    - 等生产站 `/.well-known/anvilwiki-deploy.txt` 匹配当前 commit，再校验 `/<key>.txt`；
    - 读取生产 sitemap，只提交已经真正上线的 URL，并对 429 / 5xx 做短暂重试。
 

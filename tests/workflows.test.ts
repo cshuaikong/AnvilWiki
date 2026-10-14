@@ -215,6 +215,27 @@ describe('IndexNow production automation contract', () => {
       DEPLOY_SHA: '${{ github.event.workflow_run.head_sha }}',
     });
   });
+
+  test('unresolved launch domains skip submission, but transient DNS errors stay visible', () => {
+    const detect = steps.find((step) => step.name === 'Detect IndexNow configuration');
+    const probe = detect?.run?.match(/node --input-type=module <<'NODE'\n([\s\S]*?)\nNODE/);
+    expect(probe, 'DNS readiness probe is missing').toBeTruthy();
+    const runProbe = (lookupBody: string) => spawnSync(process.execPath, [
+      '--input-type=module', '-e',
+      probe![1].replace("import { lookup } from 'node:dns/promises';", lookupBody),
+    ], { encoding: 'utf8', env: { ...process.env, SITE_TO_CHECK: 'https://example.com' } });
+    const ready = runProbe('const lookup = async () => ({ address: "192.0.2.1" });');
+    expect(ready.status).toBe(0);
+    expect(ready.stdout.trim()).toBe('ready');
+    const pending = runProbe('const lookup = async () => { throw Object.assign(new Error("missing"), { code: "ENOTFOUND" }); };');
+    expect(pending.status).toBe(0);
+    expect(pending.stdout.trim()).toBe('pending');
+    const transient = runProbe('const lookup = async () => { throw Object.assign(new Error("temporary"), { code: "EAI_AGAIN" }); };');
+    expect(transient.status).not.toBe(0);
+    expect(transient.stderr).toContain('temporary');
+    expect(detect?.run).toMatch(/if \[ "\$dns_ready" = "pending" \]; then\s+echo "enabled=false"/);
+    expect(detect?.run).toContain('::notice::[IndexNow] Skipped:');
+  });
 });
 
 describe('auto-content pipeline safety contract', () => {
