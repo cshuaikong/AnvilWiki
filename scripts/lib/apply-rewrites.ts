@@ -405,6 +405,7 @@ function buildHomePreset(input: SkinInput): Record<string, unknown> | null {
  * FOR. Exported so the contract test can drift-guard the shipped file.
  */
 export const DEMO_SITE_OPTIONAL_VALUES: readonly string[] = [
+  'contact@firstpersonboxing.fun',
   'https://discord.gg/example',
   'https://youtube.com/@example',
   'https://twitter.com/example',
