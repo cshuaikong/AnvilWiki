@@ -1,0 +1,74 @@
+---
+import { Icon } from 'astro-icon/components';
+import type { Locale } from '~/i18n/routing';
+import type { HomeUi } from '~/i18n/ui';
+import { localizePath } from '~/lib/url';
+import { visibleGameUpdates } from '~/config/editorial';
+
+interface Props {
+  locale: Locale;
+  content: HomeUi['gameOverview'];
+}
+
+const { locale, content } = Astro.props;
+const hasGameUpdates = visibleGameUpdates().length > 0;
+const cards = content.cards.filter((card) =>
+  card.title.trim() &&
+  (hasGameUpdates || !card.links.some((link) => link.href.replace(/\/$/, '') === '/updates')),
+);
+---
+
+{cards.length > 0 && (
+  <section class="border-b border-border bg-muted/20 py-8 md:py-10">
+    <div class="mx-auto max-w-7xl px-4">
+      <div class="mb-5 max-w-2xl">
+        <p class="text-xs font-bold uppercase tracking-[0.18em] text-nav">{content.badge}</p>
+        <h2 class="mt-2 text-2xl font-bold tracking-tight md:text-3xl">{content.title}</h2>
+        {content.description && <p class="mt-2 text-sm text-muted-foreground md:text-base">{content.description}</p>}
+      </div>
+
+      <div class="grid gap-3 sm:grid-cols-2">
+        {cards.map((card, index) => (
+          <article class:list={[
+            'min-w-0 rounded-xl border border-border bg-card p-4 shadow-sm',
+            cards.length % 2 === 1 && index === cards.length - 1 && 'sm:col-span-2',
+          ]}>
+            <div class="flex items-start gap-3">
+              <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-nav/10 text-nav">
+                <Icon name={card.icon} class="h-4 w-4" />
+              </div>
+              <div class="min-w-0">
+                <h3 class="font-bold leading-snug">{card.title}</h3>
+                {card.description && <p class="mt-0.5 text-sm leading-relaxed text-muted-foreground">{card.description}</p>}
+              </div>
+            </div>
+
+            {card.facts.some((fact) => fact.value.trim()) && (
+              <dl class="mt-3 flex flex-wrap gap-x-6 gap-y-1.5 pl-12 text-sm">
+                {card.facts.filter((fact) => fact.value.trim()).map((fact) => (
+                  <div class="flex min-w-0 items-baseline gap-1.5">
+                    <dt class="text-muted-foreground">{fact.label}:</dt>
+                    <dd class="font-semibold text-foreground">{fact.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+
+            {card.links.length > 0 && (
+              <div class="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 pl-12">
+                {card.links.map((link) => (
+                  <a
+                    href={localizePath(link.href, locale)}
+                    class="inline-flex items-center gap-1 text-sm font-semibold text-nav hover:underline"
+                  >
+                    {link.label}<Icon name="lucide:arrow-up-right" class="h-4 w-4" />
+                  </a>
+                ))}
+              </div>
+            )}
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+)}

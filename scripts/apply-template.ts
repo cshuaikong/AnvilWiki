@@ -286,7 +286,9 @@ function rewriteNavigationTs(input: SkinInput): string {
   const src = read(filePath);
   const items = input.categories
     .map(
-      (c) => `  { key: '${c.key}', path: '/${c.key}', icon: '${c.icon}', isContentType: true }`,
+      (c) => c.key === 'codes'
+        ? `  { key: 'codes', path: '/codes', icon: '${c.icon}', isContentType: true, singlePage: true }`
+        : `  { key: '${c.key}', path: '/${c.key}', icon: '${c.icon}', isContentType: true }`,
     )
     .join(',\n');
   // An empty selection must produce a VALID empty array — the naive
@@ -600,7 +602,9 @@ function scaffoldContent(categories: { key: string }[]): number {
     const dir = path.join(enBase, key);
     if (!DRY_RUN) fs.mkdirSync(dir, { recursive: true });
     const file = path.join(dir, 'getting-started.mdx');
-    if (!DRY_RUN && !fs.existsSync(file)) {
+    // Codes is permanently a single index.mdx page. Other categories still
+    // receive one starter article so their list pages never start empty.
+    if (key !== 'codes' && !DRY_RUN && !fs.existsSync(file)) {
       writeAtomic(
         file,
         `---

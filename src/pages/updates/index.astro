@@ -1,0 +1,38 @@
+---
+import LocaleLayout from '~/components/layout/LocaleLayout.astro';
+import { visibleGameUpdates } from '~/config/editorial';
+import { defaultLocale } from '~/i18n/routing';
+import { getUi } from '~/i18n/ui';
+
+const copy = getUi(defaultLocale).home.gameUpdates;
+const updates = visibleGameUpdates();
+---
+
+<LocaleLayout
+  locale={defaultLocale}
+  title={`${copy.title} | ${getUi(defaultLocale).site.name}`}
+  description={copy.description}
+  noindex={updates.length === 0}
+>
+  <div class="mx-auto max-w-4xl">
+    <p class="text-xs font-bold uppercase tracking-[0.18em] text-nav">{copy.badge}</p>
+    <h1 class="mt-2 text-4xl font-black tracking-tight md:text-5xl">{copy.title}</h1>
+    <p class="mt-4 text-muted-foreground">{copy.description}</p>
+    {updates.length > 0 ? (
+      <div class="mt-8 space-y-4">
+        {updates.map((update) => (
+          <a href={`/updates/${update.slug}/`} class="card block p-5">
+            <time datetime={update.date} class="text-xs text-muted-foreground">{update.date}</time>
+            {update.example && <span class="ml-3 text-xs text-nav">{copy.exampleLabel}</span>}
+            <h2 class="mt-2 text-xl font-bold">{update.title}</h2>
+            <p class="mt-2 text-sm text-muted-foreground">{update.summary}</p>
+          </a>
+        ))}
+      </div>
+    ) : (
+      <p class="mt-8 rounded-xl border border-border bg-card p-6 text-muted-foreground">
+        Game update notes will appear here when they are published.
+      </p>
+    )}
+  </div>
+</LocaleLayout>

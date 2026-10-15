@@ -12,11 +12,11 @@
 @layer base {
   :root {
     /* Light mode theme color — Anvil orange (forge fire). */
-    --brand: 25 95% 53%;
-    --brand-light: 25 95% 63%;
+    --brand: 0 62% 42%;
+    --brand-light: 0 62% 52%;
     /* Split H/S for derived shades (e.g. darker button backgrounds). */
-    --brand-h: 25;
-    --brand-s: 95%;
+    --brand-h: 0;
+    --brand-s: 62%;
     /* Text-safe shade of the brand: --brand at 52% lightness is only 3.1:1
        on white (WCAG AA needs 4.5:1 for text). Derived from the H/S splits,
        so fork themes that only edit --brand/--brand-light stay consistent. */
@@ -25,10 +25,10 @@
 
   .dark {
     /* Dark mode theme color — slightly deeper. */
-    --brand: 25 90% 49%;
-    --brand-light: 25 90% 59%;
-    --brand-h: 25;
-    --brand-s: 90%;
+    --brand: 0 57% 38%;
+    --brand-light: 0 57% 48%;
+    --brand-h: 0;
+    --brand-s: 57%;
     --brand-text: var(--brand-h) var(--brand-s) 52%;
   }
 }

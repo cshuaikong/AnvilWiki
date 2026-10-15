@@ -152,6 +152,14 @@ const navSrc = read('src/config/navigation.ts');
 const navKeys = Array.from(
   navSrc.matchAll(/(?<=[{,\s])(?<!\/\/\s*)key:\s*['"]([^'"]+)['"]/g),
 ).map((m) => m[1]);
+const contentNavKeys = Array.from(
+  navSrc.matchAll(/\{[^}\n]*key:\s*['"]([^'"]+)['"][^}\n]*isContentType:\s*true[^}\n]*\}/g),
+).map((m) => m[1]);
+const singlePageNavKeys = new Set(
+  Array.from(
+    navSrc.matchAll(/\{[^}\n]*key:\s*['"]([^'"]+)['"][^}\n]*singlePage:\s*true[^}\n]*\}/g),
+  ).map((m) => m[1]),
+);
 
 check(() => {
   const domain = siteSrc.match(/^\s*domain:\s*['"]([^'"]+)['"]/m)?.[1];
@@ -200,7 +208,7 @@ check(() => {
     // A nav key without a content dir is NOT a violation — the list page
     // simply renders the empty state (same call as check-config.ts). The
     // empty category is surfaced as a warning in check 3 below.
-    if (!exists(path.join('src/content/wiki/en', key))) {
+    if (contentNavKeys.includes(key) && !exists(path.join('src/content/wiki/en', key))) {
       info(`src/content/wiki/en/${key}/ does not exist yet (list page shows the empty state)`);
     }
   }
@@ -208,13 +216,13 @@ check(() => {
   const enDir = path.resolve(ROOT, 'src/content/wiki/en');
   if (fs.existsSync(enDir)) {
     for (const dir of fs.readdirSync(enDir, { withFileTypes: true })) {
-      if (dir.isDirectory() && !navKeys.includes(dir.name)) {
+      if (dir.isDirectory() && !contentNavKeys.includes(dir.name)) {
         fail(`src/content/wiki/en/${dir.name}/ exists but "${dir.name}" is not a navigation.ts key — the category is unreachable.`);
         broken = true;
       }
     }
   }
-  if (!broken) ok(`${navKeys.length} nav keys consistent with en.json labels and content dirs`);
+  if (!broken) ok(`${navKeys.length} nav items (${contentNavKeys.length} content categories) are consistent`);
 });
 
 // ---------------------------------------------------------------------------
@@ -230,11 +238,24 @@ const locales = fs.existsSync(contentBase)
 
 check(() => {
   let empty = 0;
-  for (const key of navKeys) {
+  for (const key of contentNavKeys) {
     const dir = path.join(contentBase, 'en', key);
-    const count = fs.existsSync(dir)
-      ? fs.readdirSync(dir).filter((f) => f.endsWith('.mdx')).length
-      : 0;
+    const mdxFiles = fs.existsSync(dir)
+      ? fs.readdirSync(dir).filter((f) => f.endsWith('.mdx'))
+      : [];
+    if (singlePageNavKeys.has(key)) {
+      const children = mdxFiles.filter((f) => f !== 'index.mdx');
+      if (!mdxFiles.includes('index.mdx')) {
+        warn(`single-page section "${key}" is missing en/${key}/index.mdx.`);
+        empty++;
+      } else if (children.length > 0) {
+        fail(`single-page section "${key}" has child articles: ${children.join(', ')}`);
+      } else {
+        info(`en/${key}: single index.mdx page`);
+      }
+      continue;
+    }
+    const count = mdxFiles.filter((f) => f !== 'index.mdx').length;
     if (count === 0) {
       warn(`category "${key}" has 0 articles in en — its list page shows the empty state.`);
       empty++;
@@ -242,20 +263,20 @@ check(() => {
       info(`en/${key}: ${count} article${count === 1 ? '' : 's'}`);
     }
   }
-  if (empty === 0) ok(`all ${navKeys.length} en categories have articles`);
+  if (empty === 0) ok(`all ${contentNavKeys.length} en content sections are populated`);
 });
 
 // Non-en locales: informational only (list pages intentionally show the
 // empty state per the i18n fallback rules).
 for (const loc of locales.filter((l) => l !== 'en')) {
-  const counts = navKeys.map((key) => {
+  const counts = contentNavKeys.map((key) => {
     const dir = path.join(contentBase, loc, key);
     return fs.existsSync(dir)
       ? fs.readdirSync(dir).filter((f) => f.endsWith('.mdx')).length
       : 0;
   });
   const totalArticles = counts.reduce((a, b) => a + b, 0);
-  info(`${loc}: ${totalArticles} article${totalArticles === 1 ? '' : 's'} across ${navKeys.length} categories`);
+  info(`${loc}: ${totalArticles} article${totalArticles === 1 ? '' : 's'} across ${contentNavKeys.length} categories`);
 }
 
 check(() => {

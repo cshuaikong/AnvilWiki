@@ -1,0 +1,43 @@
+---
+import LocaleLayout from '~/components/layout/LocaleLayout.astro';
+import { visibleGameUpdates, type GameUpdate } from '~/config/editorial';
+import { defaultLocale } from '~/i18n/routing';
+import { getUi } from '~/i18n/ui';
+
+interface Props { update: GameUpdate }
+export function getStaticPaths() {
+  return visibleGameUpdates().map((update) => ({
+    params: { slug: update.slug },
+    props: { update },
+  }));
+}
+const { update } = Astro.props;
+const copy = getUi(defaultLocale).home.gameUpdates;
+---
+
+<LocaleLayout
+  locale={defaultLocale}
+  title={`${update.title} | ${getUi(defaultLocale).site.name}`}
+  description={update.summary}
+  noindex={update.example}
+  article
+>
+  <article class="mx-auto max-w-3xl">
+    <a href="/updates/" class="text-sm font-semibold text-nav hover:underline">← {copy.archiveLink}</a>
+    <div class="mt-6 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+      <time datetime={update.date}>{update.date}</time>
+      {update.version && <span class="rounded-full bg-nav/10 px-3 py-1 text-nav">{update.version}</span>}
+      {update.example && <span>{copy.exampleLabel}</span>}
+    </div>
+    <h1 class="mt-3 text-4xl font-black tracking-tight md:text-5xl">{update.title}</h1>
+    <p class="mt-5 text-lg leading-relaxed text-muted-foreground">{update.summary}</p>
+    <div class="mt-9 space-y-8 border-t border-border pt-8">
+      {update.sections.map((section) => (
+        <section>
+          <h2 class="text-2xl font-bold">{section.heading}</h2>
+          <p class="mt-3 leading-8 text-muted-foreground">{section.text}</p>
+        </section>
+      ))}
+    </div>
+  </article>
+</LocaleLayout>

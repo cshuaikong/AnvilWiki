@@ -73,7 +73,9 @@ describe('HomePage ↔ en.json access contract', () => {
     expect(paths.size).toBeGreaterThanOrEqual(10);
     expect(paths).toContain('meta.title');
     expect(paths).toContain('hero.title');
-    expect(paths).toContain('start.cards');
+    expect(paths).toContain('gameIntro');
+    expect(paths).toContain('gameUpdates');
+    expect(paths).toContain('developerFeature');
   });
 
   test('every home.<key>[.<sub>] access (incl. aliases) exists in en.json', () => {

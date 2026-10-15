@@ -6,28 +6,27 @@
  * touching this component.
  *
  * Sections (top to bottom):
- *   1. Hero          — title, description, CTAs (strong visual anchor)
- *   2. QuickStart    — 4 large icon cards (Codes / Bosses / Guides / Tier)
- *   3. Recent Updates + Trending links (two columns)
- *   4. Explore       — 4 content modules with displayTypes
- *   5. ClosingCta      — bottom call-to-action
+ *   1. Hero          — game intro, facts, and artwork or video
+ *   2. GameOverview  — flexible status, play, update, and entry cards
+ *   3. Game introduction — excerpt linking to the full game page
+ *   4. Game updates — published game notes, separate from wiki articles
+ *   5. Recent wiki articles and developer profile
  *
- * v0.2 refactor: trimmed from 8 sections to 5. Removed GameInfo (info
- * duplicated Hero stats), FAQ (moved to /faq), standalone TrendingNow
- * (merged into Recent Updates). Explore modules trimmed 8→4. Page length
- * compressed from ~7 screens to ~4.
+ * Game updates are patch notes; Recent below them contains wiki articles.
  */
 import { Icon } from 'astro-icon/components';
 import LocaleLayout from '~/components/layout/LocaleLayout.astro';
-import VideoSection from '~/components/home/VideoSection.astro';
-import QuickStart from '~/components/home/QuickStart.astro';
-import ExploreModules from '~/components/home/ExploreModules.astro';
+import LazyYouTube from '~/components/video/LazyYouTube.astro';
+import GameOverview from '~/components/home/GameOverview.astro';
+import GameIntro from '~/components/home/GameIntro.astro';
+import GameUpdates from '~/components/home/GameUpdates.astro';
+import DeveloperFeature from '~/components/home/DeveloperFeature.astro';
 import { site } from '~/config/site';
 import { NAVIGATION_CONFIG } from '~/config/navigation';
 import { type Locale } from '~/i18n/routing';
 import { getUi, type HomeUi } from '~/i18n/ui';
 import { getRecentEntries, parseEntryId } from '~/lib/content';
-import { localizePath, listPath, detailPath } from '~/lib/url';
+import { listPath, detailPath, recentPath } from '~/lib/url';
 
 interface Props {
   locale: Locale;
@@ -59,21 +58,12 @@ const meta = {
 // missing from en.json itself is a build-time typecheck failure, not a
 // blanked section at runtime.
 const hero: HomeUi['hero'] = home.hero;
+const gameOverview: HomeUi['gameOverview'] = home.gameOverview;
+const heroArtwork = '/images/' + 'hero' + '.webp';
+const heroPrimaryHref = site.social.official && !site.social.official.startsWith('https://example.com')
+  ? site.social.official
+  : listPath(NAVIGATION_CONFIG[1]?.key ?? NAVIGATION_CONFIG[0]?.key ?? 'guides', locale);
 const updates: HomeUi['updates'] = home.updates;
-const start: HomeUi['start'] = home.start;
-const popular: HomeUi['popular'] = home.popular;
-const explore: HomeUi['explore'] = home.explore;
-const closingCta: HomeUi['closingCta'] = home.closingCta;
-
-// QuickLink may be a string or { label, href } — normalize for the sidebar list.
-type QuickLink = string | { label: string; href: string };
-const trendingLinks: QuickLink[] = Array.isArray(popular.quickLinks) ? popular.quickLinks : [];
-function trendingHref(link: QuickLink): string | null {
-  return typeof link === 'string' ? null : localizePath(link.href, locale);
-}
-function trendingLabel(link: QuickLink): string {
-  return typeof link === 'string' ? link : link.label;
-}
 ---
 
 <LocaleLayout
@@ -84,7 +74,7 @@ function trendingLabel(link: QuickLink): string {
   jsonLd={jsonLd}
 >
   {/* ─────────────────────────────── Hero ─────────────────────────────── */}
-  <section class="relative flex min-h-[52vh] items-center overflow-hidden border-b border-border md:min-h-[68vh]">
+  <section class="relative overflow-hidden border-b border-border">
     {/* Subtle theme-color gradient backdrop — gives the hero a visual anchor
         without requiring an image asset. Sits behind the watermark. */}
     <div
@@ -99,60 +89,87 @@ function trendingLabel(link: QuickLink): string {
       {site.game.name}
     </span>
 
-    <div class="relative mx-auto w-full max-w-7xl px-4 py-16 md:py-24">
-      <p class="text-sm font-semibold uppercase tracking-wider text-foreground">{hero.badge}</p>
-      <h1
-        class="mt-3 max-w-3xl bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-4xl font-black tracking-tight text-transparent sm:text-5xl md:text-6xl lg:text-7xl"
-      >
-        {hero.title}
-      </h1>
-      <p class="mt-5 max-w-xl text-base text-muted-foreground md:text-lg">{hero.description}</p>
-      <div class="mt-8 flex flex-wrap gap-3">
-        {
-          hero.ctaPrimary && (
-            <a
-              href={site.social.official}
-              target="_blank"
-              rel="noopener noreferrer"
-              class="btn-primary"
-            >
-              <Icon name="lucide:play" class="mr-2 h-4 w-4" />
-              {hero.ctaPrimary}
+    <div class="relative mx-auto grid w-full max-w-7xl items-center gap-10 px-4 py-12 md:grid-cols-2 md:gap-12 md:py-16 lg:py-20">
+      <div class="min-w-0">
+        <p class="text-sm font-semibold uppercase tracking-wider text-foreground">{hero.badge}</p>
+        <h1
+          class="mt-3 max-w-3xl bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-4xl font-black tracking-tight text-transparent sm:text-5xl lg:text-6xl"
+        >
+          {hero.title}
+        </h1>
+        <p class="mt-5 max-w-xl text-base text-muted-foreground md:text-lg">{hero.description}</p>
+
+        <dl class="mt-6 grid max-w-xl grid-cols-2 gap-3 sm:grid-cols-3">
+          <div class="rounded-lg border border-border/70 bg-card/70 p-3">
+            <dt class="text-xs font-medium uppercase tracking-wide text-muted-foreground">{hero.developerLabel}</dt>
+            <dd class="mt-1 truncate text-sm font-semibold text-foreground">{site.game.developer}</dd>
+          </div>
+          <div class="rounded-lg border border-border/70 bg-card/70 p-3">
+            <dt class="text-xs font-medium uppercase tracking-wide text-muted-foreground">{hero.platformLabel}</dt>
+            <dd class="mt-1 truncate text-sm font-semibold text-foreground">{site.game.platform}</dd>
+          </div>
+          <div class="rounded-lg border border-border/70 bg-card/70 p-3">
+            <dt class="text-xs font-medium uppercase tracking-wide text-muted-foreground">{hero.genreLabel}</dt>
+            <dd class="mt-1 truncate text-sm font-semibold text-foreground">{site.game.genre}</dd>
+          </div>
+          {site.game.releaseDate && (
+            <div class="rounded-lg border border-border/70 bg-card/70 p-3">
+              <dt class="text-xs font-medium uppercase tracking-wide text-muted-foreground">{hero.releaseDateLabel}</dt>
+              <dd class="mt-1 truncate text-sm font-semibold text-foreground">{site.game.releaseDate}</dd>
+            </div>
+          )}
+          {site.game.playerCount && (
+            <div class="rounded-lg border border-border/70 bg-card/70 p-3">
+              <dt class="text-xs font-medium uppercase tracking-wide text-muted-foreground">{hero.playerCountLabel}</dt>
+              <dd class="mt-1 truncate text-sm font-semibold text-foreground">{site.game.playerCount}</dd>
+            </div>
+          )}
+        </dl>
+
+        <div class="mt-7 flex flex-wrap gap-3">
+          {hero.ctaPrimary && (
+            <a href={heroPrimaryHref} class="btn-primary">
+              <Icon name="lucide:play" class="mr-2 h-4 w-4" />{hero.ctaPrimary}
             </a>
-          )
-        }
-        {
-          hero.ctaSecondary && (
-            <a href={listPath(NAVIGATION_CONFIG[1]?.key ?? 'guides', locale)} class="btn-outline">
+          )}
+          {hero.ctaSecondary && (
+            <a href={recentPath(locale)} class="btn-outline">
               {hero.ctaSecondary}
             </a>
-          )
-        }
+          )}
+        </div>
+      </div>
+
+      <div class="relative aspect-video overflow-hidden rounded-2xl border border-border bg-card shadow-xl">
+        {hero.videoId ? (
+          <div class="h-full w-full">
+            <LazyYouTube videoId={hero.videoId} title={`${site.game.name} ${shared.gameTrailer}`} />
+          </div>
+        ) : (
+          <img
+            src={heroArtwork}
+            alt={`${site.game.name} game artwork`}
+            class="h-full w-full object-cover"
+            fetchpriority="high"
+            width="1200"
+            height="630"
+          />
+        )}
+        <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/30 via-transparent to-transparent" />
       </div>
     </div>
   </section>
 
-  {/* Trailer — only renders when a videoId is configured. */}
-  {hero.videoId && (
-    <VideoSection videoId={hero.videoId} title={`${site.game.name} ${shared.gameTrailer}`} />
-  )}
+  {gameOverview && <GameOverview locale={locale} content={gameOverview} />}
+  <GameIntro copy={home.gameIntro} />
+  <GameUpdates copy={home.gameUpdates} />
 
-  {/* ───────────────────────────── Quick Start ────────────────────────── */}
-  <QuickStart
-    locale={locale}
-    badge={start.badge}
-    title={start.title}
-    cards={start.cards}
-  />
-
-  {/* ───────────────────── Recent Updates + Trending ───────────────────── */}
+  {/* ───────────────────── Recent wiki articles ────────────────────────── */}
   <section class="section border-t border-border">
-    <div class="grid gap-8 lg:grid-cols-3">
-      {/* Recent updates — 2/3 width on desktop. */}
-      <div class="lg:col-span-2">
+    <div>
         <div class="flex items-baseline justify-between">
           <h2 class="text-2xl font-bold">{updates.title}</h2>
-          <a href={listPath(NAVIGATION_CONFIG[1]?.key ?? 'guides', locale)} class="text-sm text-foreground hover:text-nav hover:underline"
+          <a href={recentPath(locale)} class="text-sm text-foreground hover:text-nav hover:underline"
             >{shared.browseAll}</a
           >
         </div>
@@ -179,84 +196,9 @@ function trendingLabel(link: QuickLink): string {
             )
           }
         </div>
-      </div>
-
-      {/* Trending — 1/3 width sidebar list. */}
-      {trendingLinks.length > 0 && (
-        <aside>
-          <p class="text-sm font-semibold uppercase tracking-wider text-foreground">{popular.badge}</p>
-          <h2 class="mt-1 text-2xl font-bold">{popular.title}</h2>
-          <ul class="mt-4 space-y-2">
-            {trendingLinks.map((link: QuickLink) => {
-              const href = trendingHref(link);
-              const label = trendingLabel(link);
-              return (
-                <li>
-                  {href ? (
-                    <a
-                      href={href}
-                      class="flex items-center gap-2 rounded-md border bg-card p-3 text-sm font-medium transition hover:border-nav/50"
-                    >
-                      <Icon name="lucide:trending-up" class="h-4 w-4 shrink-0 text-nav" />
-                      <span class="leading-snug">{label}</span>
-                    </a>
-                  ) : (
-                    <div class="flex items-center gap-2 rounded-md border bg-card p-3 text-sm font-medium">
-                      <Icon name="lucide:trending-up" class="h-4 w-4 shrink-0 text-nav" />
-                      <span class="leading-snug">{label}</span>
-                    </div>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        </aside>
-      )}
     </div>
   </section>
 
-  {/* ──────────────────────────── Explore Modules ─────────────────────── */}
-  {
-    explore.modules?.length > 0 && (
-      <section class="section border-t border-border">
-        <h2 class="text-2xl font-bold">{explore.title}</h2>
-        <p class="mt-1 text-sm text-muted-foreground">{explore.description}</p>
-        <div class="mt-8">
-          <ExploreModules modules={explore.modules} locale={locale} />
-        </div>
-      </section>
-    )
-  }
+  <DeveloperFeature copy={home.developerFeature} />
 
-  {/* ─────────────────────────────── Final CTA ────────────────────────── */}
-  {
-    closingCta.title && (
-      <section class="section border-t border-border">
-        <div class="rounded-xl border bg-card p-8 text-center md:p-12">
-          <h2 class="text-2xl font-bold md:text-3xl">{closingCta.title}</h2>
-          <p class="mx-auto mt-2 max-w-xl text-muted-foreground">{closingCta.description}</p>
-          <div class="mt-6 flex justify-center gap-3">
-            <a
-              href={site.social.official}
-              target="_blank"
-              rel="noopener noreferrer"
-              class="btn-primary"
-            >
-              {closingCta.primary}
-            </a>
-            {closingCta.secondary && site.social.discord && (
-              <a
-                href={site.social.discord}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="btn-outline"
-              >
-                {closingCta.secondary}
-              </a>
-            )}
-          </div>
-        </div>
-      </section>
-    )
-  }
 </LocaleLayout>

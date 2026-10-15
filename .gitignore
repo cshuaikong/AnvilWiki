@@ -50,6 +50,7 @@ reports/
 
 # local tool output (review reports etc.)
 out/
+.firecrawl/
 
 # video-agent-kit plugin bootstrap pointer (regenerated every session)
 .video_agent/

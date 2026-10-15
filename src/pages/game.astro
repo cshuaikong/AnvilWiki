@@ -1,0 +1,42 @@
+---
+import LocaleLayout from '~/components/layout/LocaleLayout.astro';
+import { gameProfile } from '~/config/editorial';
+import { site } from '~/config/site';
+import { defaultLocale } from '~/i18n/routing';
+import { getUi } from '~/i18n/ui';
+
+const copy = getUi(defaultLocale).home.gameIntro;
+---
+
+<LocaleLayout
+  locale={defaultLocale}
+  title={`About ${site.game.name} | ${site.name}`}
+  description={copy.description}
+>
+  <div class="mx-auto max-w-4xl">
+    <p class="text-xs font-bold uppercase tracking-[0.18em] text-nav">{copy.badge}</p>
+    <h1 class="mt-2 text-4xl font-black tracking-tight md:text-5xl">{copy.title}</h1>
+    <p class="mt-5 text-lg leading-relaxed text-muted-foreground">{copy.description}</p>
+    <dl class="mt-8 grid gap-3 rounded-xl border border-border bg-card p-5 sm:grid-cols-3">
+      <div><dt class="text-xs uppercase text-muted-foreground">Developer</dt><dd class="mt-1 font-semibold">{site.game.developer}</dd></div>
+      <div><dt class="text-xs uppercase text-muted-foreground">Platform</dt><dd class="mt-1 font-semibold">{site.game.platform}</dd></div>
+      <div><dt class="text-xs uppercase text-muted-foreground">Genre</dt><dd class="mt-1 font-semibold">{site.game.genre}</dd></div>
+    </dl>
+    <div class="mt-10 space-y-9">
+      {[
+        { title: copy.backgroundLabel, text: gameProfile.background },
+        { title: copy.gameplayLabel, text: gameProfile.gameplay },
+        { title: copy.audienceLabel, text: gameProfile.audience },
+      ].map((section) => (
+        <section>
+          <h2 class="text-2xl font-bold">{section.title}</h2>
+          <p class="mt-3 leading-8 text-muted-foreground">{section.text}</p>
+        </section>
+      ))}
+    </div>
+    <div class="mt-10 flex flex-wrap gap-4 border-t border-border pt-6 text-sm font-semibold text-nav">
+      <a href="/guides/" class="hover:underline">Browse guides ↗</a>
+      <a href="/developer/" class="hover:underline">{copy.developerLink} ↗</a>
+    </div>
+  </div>
+</LocaleLayout>

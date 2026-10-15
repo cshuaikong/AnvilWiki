@@ -239,7 +239,67 @@ function buildHomePreset(input: SkinInput): Record<string, unknown> | null {
           : `${input.gameName} Wiki — Guides, Bosses & Progression`,
       description: input.description,
     },
-    updates: { title: 'Recent updates' },
+    updates: { title: 'Latest wiki articles' },
+    gameIntro: {
+      badge: 'About the game',
+      title: `Discover ${input.gameName}`,
+      description: 'The setting, gameplay and who this game is for.',
+      backgroundLabel: 'The world',
+      gameplayLabel: 'How it plays',
+      audienceLabel: 'Who it suits',
+      detailLink: 'Read the full game overview',
+      developerLink: 'Developer profile',
+    },
+    gameUpdates: {
+      badge: 'Patch notes',
+      title: 'Game updates',
+      description: 'Follow game changes and open each update for details.',
+      archiveLink: 'All game updates',
+      exampleLabel: 'Preview example',
+    },
+    developerFeature: {
+      badge: 'Behind the game',
+      title: 'Meet the developer',
+      description: 'Learn about the studio and its games.',
+      gamesLabel: 'Games',
+      detailLink: 'Developer profile',
+    },
+    gameOverview: {
+      badge: 'At a glance',
+      title: 'Know the game',
+      description: 'A quick view of the game and where to begin.',
+      cards: [
+        {
+          icon: 'lucide:circle-check', title: 'Game status',
+          description: 'Release and availability information.',
+          facts: input.releaseDate ? [{ label: 'Released', value: input.releaseDate }] : [],
+          links: [{ label: 'About the game', href: '/about' }],
+        },
+        {
+          icon: 'lucide:gamepad-2', title: 'How to play',
+          description: 'The platform and style at a glance.',
+          facts: [
+            { label: 'Platform', value: input.platform },
+            { label: 'Genre', value: input.genre },
+          ],
+          links: [{ label: 'Browse guides', href: `/${first}` }],
+        },
+        {
+          icon: 'lucide:refresh-cw', title: 'Version & updates',
+          description: 'Follow the latest wiki changes.',
+          facts: [
+            { label: 'Current version', value: '' },
+            { label: 'Last update', value: '' },
+          ],
+          links: [{ label: 'Recent updates', href: '/recent' }],
+        },
+        {
+          icon: 'lucide:compass', title: 'Where to start',
+          description: 'Find your first guide quickly.', facts: [],
+          links: [{ label: 'Start browsing', href: `/${first}` }],
+        },
+      ],
+    },
     popular: {
       badge: 'Popular',
       title: 'Most read',
@@ -261,7 +321,7 @@ function buildHomePreset(input: SkinInput): Record<string, unknown> | null {
         title: `${input.gameName} Codes`,
         description: `All working ${input.gameName} codes with expiry dates, plus guides and tier lists.`,
         ctaPrimary: 'Play now',
-        ctaSecondary: 'Browse guides',
+        ctaSecondary: 'Latest articles',
       },
       start: {
         badge: 'Quick start',
@@ -300,7 +360,7 @@ function buildHomePreset(input: SkinInput): Record<string, unknown> | null {
       title: `${input.gameName} Wiki`,
       description: `Complete ${input.gameName} guides — bosses, items, and progression.`,
       ctaPrimary: 'Start reading',
-      ctaSecondary: 'Browse all',
+      ctaSecondary: 'Latest articles',
     },
     start: {
       badge: 'Quick start',

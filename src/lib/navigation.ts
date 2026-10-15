@@ -32,7 +32,11 @@ export async function getDynamicNavigation(
   const groups: NavGroup[] = [];
 
   for (const item of NAVIGATION_CONFIG) {
-    const entries = await getEntriesByCategory(item.key, locale);
+    // Single-page sections such as /codes/ use only index.mdx and never
+    // acquire an article dropdown even though they keep the category route.
+    const entries = item.isContentType && !item.singlePage
+      ? await getEntriesByCategory(item.key, locale)
+      : [];
     groups.push({
       key: item.key,
       label: labels[item.key] ?? capitalize(item.key),

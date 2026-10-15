@@ -57,6 +57,9 @@ const navSrc = read('src/config/navigation.ts');
 const navKeys = Array.from(
   navSrc.matchAll(/(?<=[{,\s])(?<!\/\/\s*)key:\s*['"]([^'"]+)['"]/g),
 ).map((m) => m[1]);
+const contentNavKeys = Array.from(
+  navSrc.matchAll(/\{[^}\n]*key:\s*['"]([^'"]+)['"][^}\n]*isContentType:\s*true[^}\n]*\}/g),
+).map((m) => m[1]);
 if (navKeys.length === 0) {
   // Same bargain as the routing.ts readers in lib/routing-flags.ts: a parse
   // failure must be loud — gating nothing while printing green is worse than
@@ -94,7 +97,7 @@ for (const key of navKeys) {
     err(`en.json is missing overview.${key} (list page will have no title)`);
   }
   const contentDir = path.resolve(ROOT, 'src/content/wiki/en', key);
-  if (!fs.existsSync(contentDir)) {
+  if (contentNavKeys.includes(key) && !fs.existsSync(contentDir)) {
     // Not an error: an empty category simply renders the "no articles" state
     // on its list page. Surface as info so users know it's intentional-looking.
     console.log(`  ℹ️  src/content/wiki/en/${key}/ has no content yet (list page will show the empty state)`);

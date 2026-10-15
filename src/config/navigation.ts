@@ -22,18 +22,24 @@ export interface NavigationItem {
   path: string;
   /** Icon name from src/icons/ (without extension). */
   icon: string;
-  /** Whether this category has MDX content (always true for content types). */
-  isContentType: true;
+  /** Whether this item owns an MDX article category and a generated list route. */
+  isContentType: boolean;
+  /** Single landing page backed only by index.mdx; no child article grid or dropdown. */
+  singlePage?: boolean;
 }
 
 /** Menu order = array order — every consumer renders by physical position. */
 export const NAVIGATION_CONFIG: NavigationItem[] = [
-  { key: 'bosses', path: '/bosses', icon: 'lucide:swords', isContentType: true },
   { key: 'guides', path: '/guides', icon: 'lucide:book-open', isContentType: true },
-  { key: 'items', path: '/items', icon: 'lucide:package', isContentType: true },
-  { key: 'tier-list', path: '/tier-list', icon: 'lucide:bar-chart-3', isContentType: true },
-  { key: 'characters', path: '/characters', icon: 'lucide:users', isContentType: true },
+  { key: 'controls', path: '/controls', icon: 'lucide:gamepad-2', isContentType: true },
+  { key: 'combat', path: '/combat', icon: 'lucide:shield', isContentType: true },
+  { key: 'codes', path: '/codes', icon: 'lucide:ticket', isContentType: true, singlePage: true },
 ];
 
 /** Derived list of content type slugs (e.g. ['bosses', 'guides', 'items', 'codes']). */
-export const CONTENT_TYPES: string[] = NAVIGATION_CONFIG.map((n) => n.key);
+export const CONTENT_TYPES: string[] = NAVIGATION_CONFIG.filter((n) => n.isContentType).map((n) => n.key);
+
+/** Categories allowed on normal article frontmatter (single-page sections excluded). */
+export const ARTICLE_CONTENT_TYPES: string[] = NAVIGATION_CONFIG
+  .filter((n) => n.isContentType && !n.singlePage)
+  .map((n) => n.key);

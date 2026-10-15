@@ -8,11 +8,12 @@
 import { Icon } from 'astro-icon/components';
 import LocaleLayout from '~/components/layout/LocaleLayout.astro';
 import CategoryGrid from '~/components/article/CategoryGrid.astro';
+import CodesTable from '~/components/article/CodesTable.astro';
 import { NAVIGATION_CONFIG } from '~/config/navigation';
 import { type Locale } from '~/i18n/routing';
 import { getUi } from '~/i18n/ui';
 import { getEntriesByCategory, parseEntryId } from '~/lib/content';
-import { itemListJsonLd, pageTitle, simpleBreadcrumbJsonLd } from '~/lib/seo';
+import { faqPageJsonLd, itemListJsonLd, pageTitle, simpleBreadcrumbJsonLd } from '~/lib/seo';
 import { homeUrl, listPath } from '~/lib/url';
 
 interface Props {
@@ -26,8 +27,21 @@ interface Props {
    * but no articles yet is NOT the thin empty state this flag exists for.
    */
   hasIndex?: boolean;
+  /** Structured frontmatter from category index.mdx (used by single-page sections). */
+  indexData?: {
+    lastModified?: Date;
+    summary?: string;
+    codes?: Array<{
+      code: string;
+      reward?: string;
+      status: 'active' | 'expired';
+      expiryDate?: string;
+      source?: string;
+    }>;
+    faq?: Array<{ question: string; answer: string }>;
+  };
 }
-const { locale, category, alternates = [], hasIndex = false } = Astro.props;
+const { locale, category, alternates = [], hasIndex = false, indexData } = Astro.props;
 const ui = getUi(locale);
 const nav = ui.nav as Record<string, string>;
 const shared = ui.shared;
@@ -46,6 +60,9 @@ const description =
   (String(shared.defaultListDescription ?? '').replace('{title}', title) || title);
 
 const entries = await getEntriesByCategory(category, locale);
+const singlePage = navItem?.singlePage === true;
+const landingCodes = indexData?.codes ?? [];
+const landingFaq = indexData?.faq ?? [];
 
 const jsonLd = [
   // Empty ItemList (itemListElement: []) is invalid structured data — only
@@ -69,6 +86,7 @@ const jsonLd = [
     locale,
     homeLabel: nav.home,
   }),
+  ...(landingFaq.length > 0 ? [faqPageJsonLd(landingFaq)] : []),
 ];
 ---
 
@@ -100,13 +118,62 @@ const jsonLd = [
         <h1 class="text-3xl font-extrabold tracking-tight">{title}</h1>
       </div>
       <p class="mt-2 max-w-2xl text-muted-foreground">{description}</p>
+      {singlePage && indexData?.lastModified && (
+        <p class="mt-3 inline-flex items-center gap-1 text-xs text-muted-foreground">
+          <Icon name="lucide:refresh-cw" class="h-3.5 w-3.5" />
+          {shared.lastUpdated}: {indexData.lastModified.toLocaleDateString(locale, { timeZone: 'UTC' })}
+        </p>
+      )}
     </header>
+
+    {singlePage && indexData?.summary && (
+      <aside class="rounded-lg border-l-4 border-nav bg-nav/5 p-4">
+        <div class="flex items-start gap-2">
+          <Icon name="lucide:lightbulb" class="mt-0.5 h-4 w-4 shrink-0 text-nav" />
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-foreground">{shared.quickAnswer}</p>
+            <p class="mt-1 text-sm text-foreground">{indexData.summary}</p>
+          </div>
+        </div>
+      </aside>
+    )}
+
+    {singlePage && landingCodes.length > 0 && (
+      <CodesTable codes={landingCodes} copiedText={shared.copied} labels={shared.codesTable} />
+    )}
+
+    {singlePage && landingCodes.length === 0 && (
+      <section class="rounded-xl border border-border bg-card p-6">
+        <p class="text-xs font-bold uppercase tracking-[0.16em] text-nav">Verified status</p>
+        <h2 class="mt-2 text-xl font-bold">No verified active codes</h2>
+        <p class="mt-2 text-sm leading-6 text-muted-foreground">
+          No official game-specific codes have been confirmed from a verified source yet.
+        </p>
+      </section>
+    )}
 
     {/* Category landing prose: the body of
         src/content/wiki/<locale>/<category>/index.mdx, when that file exists.
         No file (no slot content) → this page is exactly the list it always was. */}
-    <slot />
+    {singlePage ? <div class="prose prose-slate max-w-none dark:prose-invert"><slot /></div> : <slot />}
 
-    <CategoryGrid locale={locale} category={category} entries={entries} />
+    {singlePage && landingFaq.length > 0 && (
+      <section class="border-t border-border pt-8" aria-label={shared.codesFaqTitle}>
+        <h2 class="text-xl font-bold">{shared.codesFaqTitle}</h2>
+        <div class="mt-4 space-y-2">
+          {landingFaq.map((item) => (
+            <details class="group rounded-lg border border-border bg-card">
+              <summary class="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 text-sm font-semibold [&::-webkit-details-marker]:hidden">
+                {item.question}
+                <Icon name="lucide:chevron-down" class="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
+              </summary>
+              <div class="border-t border-border px-4 py-3 text-sm text-foreground">{item.answer}</div>
+            </details>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {!navItem?.singlePage && <CategoryGrid locale={locale} category={category} entries={entries} />}
   </div>
 </LocaleLayout>

@@ -37,6 +37,78 @@
             "title": { "type": "string" }
           }
         },
+        "gameOverview": {
+          "type": "object",
+          "description": "Cards beneath the hero. Add, remove, or reorder cards for each game; cards with no title are omitted.",
+          "properties": {
+            "badge": { "type": "string" },
+            "title": { "type": "string" },
+            "description": { "type": "string" },
+            "cards": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["icon", "title", "description", "facts", "links"],
+                "properties": {
+                  "icon": { "type": "string", "examples": ["lucide:gamepad-2"] },
+                  "title": { "type": "string" },
+                  "description": { "type": "string" },
+                  "facts": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["label", "value"],
+                      "properties": {
+                        "label": { "type": "string" },
+                        "value": { "type": "string" }
+                      }
+                    }
+                  },
+                  "links": {
+                    "type": "array",
+                    "items": { "$ref": "#/$defs/cta" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "gameIntro": {
+          "type": "object",
+          "description": "Game introduction labels and link text; paragraphs live in src/config/editorial.ts.",
+          "properties": {
+            "badge": { "type": "string" },
+            "title": { "type": "string" },
+            "description": { "type": "string" },
+            "backgroundLabel": { "type": "string" },
+            "gameplayLabel": { "type": "string" },
+            "audienceLabel": { "type": "string" },
+            "detailLink": { "type": "string" },
+            "developerLink": { "type": "string" }
+          }
+        },
+        "gameUpdates": {
+          "type": "object",
+          "description": "Game update section labels; update records live in src/config/editorial.ts.",
+          "properties": {
+            "badge": { "type": "string" },
+            "title": { "type": "string" },
+            "description": { "type": "string" },
+            "archiveLink": { "type": "string" },
+            "exampleLabel": { "type": "string" }
+          }
+        },
+        "developerFeature": {
+          "type": "object",
+          "description": "Developer section labels; the studio profile and game list live in src/config/editorial.ts.",
+          "properties": {
+            "badge": { "type": "string" },
+            "title": { "type": "string" },
+            "description": { "type": "string" },
+            "gamesLabel": { "type": "string" },
+            "detailLink": { "type": "string" }
+          }
+        },
         "start": {
           "type": "object",
           "required": ["title", "cards"],

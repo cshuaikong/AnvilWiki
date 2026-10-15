@@ -1,0 +1,39 @@
+---
+import type { HomeUi } from '~/i18n/ui';
+import { developerProfile } from '~/config/editorial';
+import { site } from '~/config/site';
+
+interface Props {
+  copy: HomeUi['developerFeature'];
+}
+const { copy } = Astro.props;
+---
+
+<section class="section border-t border-border">
+  <div class="grid gap-6 rounded-2xl border border-border bg-card p-6 md:grid-cols-[minmax(0,1.4fr)_minmax(0,0.6fr)] md:p-8">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-[0.18em] text-nav">{copy.badge}</p>
+      <h2 class="mt-2 text-2xl font-bold tracking-tight md:text-3xl">{copy.title}</h2>
+      <h3 class="mt-4 text-xl font-semibold">{site.game.developer}</h3>
+      <p class="mt-2 max-w-2xl leading-relaxed text-muted-foreground">{developerProfile.description}</p>
+      <a href="/developer/" class="mt-5 inline-flex items-center gap-2 font-semibold text-nav hover:underline">
+        {copy.detailLink}<span aria-hidden="true">↗</span>
+      </a>
+    </div>
+    {developerProfile.games.length > 0 && (
+      <div class="rounded-xl bg-muted/40 p-5">
+        <p class="text-xs font-bold uppercase tracking-wider text-muted-foreground">{copy.gamesLabel}</p>
+        <ul class="mt-3 space-y-3">
+          {developerProfile.games.map((game) => (
+            <li>
+              <a href={game.href} class="block rounded-lg border border-border bg-card p-3 hover:border-nav/50">
+                <span class="font-semibold">{game.name}</span>
+                <span class="mt-1 block text-xs text-muted-foreground">{game.description}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+  </div>
+</section>

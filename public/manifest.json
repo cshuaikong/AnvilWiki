@@ -1,11 +1,11 @@
 {
-  "name": "Plane Crazy Wiki",
-  "short_name": "PlaneCrazy",
-  "description": "Complete Plane Crazy wiki with guides, codes, tier lists, and tips. Every page carries a last-verified date.",
+  "name": "First Person Boxing Wiki",
+  "short_name": "First Person Boxing Wiki",
+  "description": "A first-person Roblox boxing game built around slips, guards, stamina, counters, and knockouts against players or AI.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#f97415",
+  "theme_color": "#ae2929",
   "icons": [
     {
       "src": "/favicon/android-chrome-192x192.png",

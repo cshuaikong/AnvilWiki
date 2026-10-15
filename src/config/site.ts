@@ -49,6 +49,8 @@ export interface SiteConfig {
     genre: string;
     /** ISO release date (optional). */
     releaseDate?: string;
+    /** Optional live player count or server population label for the homepage. */
+    playerCount?: string;
   };
   /**
    * Dimensions of the default OG/Twitter share image (public/images/hero.webp).
@@ -62,23 +64,23 @@ export interface SiteConfig {
 }
 
 export const site: SiteConfig = {
-  name: 'Plane Crazy Wiki',
-  shortName: 'PlaneCrazy',
-  description: 'Complete Plane Crazy wiki with guides, codes, tier lists, and tips. Every page carries a last-verified date.',
-  domain: 'planecrazy-game.wiki',
-  tagline: 'Your home for everything Plane Crazy',
-  legalNotice: 'Plane Crazy Wiki is a fan-made community site. Not affiliated with or endorsed by the game developer.',
+  name: 'First Person Boxing Wiki',
+  shortName: 'First Person Boxing Wiki',
+  description: 'A first-person Roblox boxing game built around slips, guards, stamina, counters, and knockouts against players or AI.',
+  domain: 'firstpersonboxing.invalid',
+  tagline: 'Master the ring in first person',
+  legalNotice: 'First Person Boxing Wiki is an independent fan site. Not affiliated with or endorsed by Can You Box? or Roblox.',
   // Set a real address if you run no social channels — the contact page
   // renders it as a mailto link.
   contactEmail: '',
   social: {
-    official: 'https://example.com',
+    official: 'https://www.roblox.com/games/132956556682909/First-Person-Boxing',
   },
   game: {
-    name: 'Plane Crazy',
-    platform: 'steam',
-    developer: 'madattak',
-    genre: 'Sandbox / Vehicle Building',
+    name: 'First Person Boxing',
+    platform: 'Roblox',
+    developer: 'Can You Box?',
+    genre: 'First-person boxing / Fighting',
     releaseDate: '',
   },
   // og:image dims of the SHIPPED hero.webp — if you replace public/images/hero.webp,

@@ -1,11 +1,11 @@
 {
   "$schema": "../../docs/home.schema.json",
   "site": {
-    "name": "Plane Crazy Wiki",
-    "shortName": "PlaneCrazy",
-    "description": "Complete Plane Crazy wiki with guides, codes, tier lists, and tips. Every page carries a last-verified date.",
-    "tagline": "Your home for everything Plane Crazy",
-    "legalNotice": "Plane Crazy Wiki is a fan-made community site. Not affiliated with or endorsed by the game developer."
+    "name": "First Person Boxing Wiki",
+    "shortName": "First Person Boxing Wiki",
+    "description": "A first-person Roblox boxing game built around slips, guards, stamina, counters, and knockouts against players or AI.",
+    "tagline": "Master the ring in first person",
+    "legalNotice": "First Person Boxing Wiki is an independent fan site. Not affiliated with or endorsed by Can You Box? or Roblox."
   },
   "nav": {
     "home": "Home",
@@ -14,11 +14,10 @@
     "close": "Close",
     "search": "Search",
     "language": "Language",
-    "bosses": "Bosses",
     "guides": "Guides",
-    "items": "Items",
-    "tier-list": "Tier List",
-    "characters": "Characters"
+    "controls": "Controls",
+    "combat": "Combat",
+    "codes": "Codes"
   },
   "search": {
     "placeholder": "Search the wiki...",
@@ -29,7 +28,7 @@
     "lastUpdated": "Last updated",
     "publishedOn": "Published",
     "noArticles": "No articles yet. Check back soon!",
-    "defaultListDescription": "Browse every {title} article — walkthroughs, tips, tier lists and up-to-date reference tables, all in one place.",
+    "defaultListDescription": "Browse every {title} article — verified basics, practical tips, and reference guides in one place.",
     "relatedArticles": "Related Articles",
     "onThisPage": "On this page",
     "browseAll": "Browse all",
@@ -56,20 +55,12 @@
     },
     "codesFaq": [
       {
-        "question": "How do I redeem codes?",
-        "answer": "Open the game, click the settings gear in the top-right, paste your code into the Redeem Code field, and confirm. Codes are case-sensitive."
+        "question": "Are there verified First Person Boxing codes?",
+        "answer": "No official game-specific redemption codes were verified during the initial site research. This wiki will not publish guessed or unrelated Roblox platform codes."
       },
       {
-        "question": "Why do codes stop working?",
-        "answer": "Codes expire on a schedule set by the developer (usually monthly or tied to update milestones), and some are one-per-account. This page is re-tested regularly."
-      },
-      {
-        "question": "How often are new codes released?",
-        "answer": "New codes typically arrive with each major game update. Bookmark this page and check back after every patch."
-      },
-      {
-        "question": "Do codes expire?",
-        "answer": "Yes — most codes have an expiry date, shown next to each code. Expired codes move to the expired table below."
+        "question": "When will codes be added?",
+        "answer": "Codes will be listed only after they can be traced to the official game page or a verified developer announcement."
       }
     ],
     "possiblyOutdated": "This guide was last checked on",
@@ -125,66 +116,182 @@
     "paginationAria": "Article pagination"
   },
   "overview": {
-    "bosses": {
-      "overviewTitle": "All Bosses",
-      "overviewDescription": "Complete strategy guides for every boss, including attack patterns, weaknesses, and recommended loadouts."
-    },
     "guides": {
       "overviewTitle": "All Guides",
-      "overviewDescription": "In-depth tutorials covering progression, crafting, combat mechanics, and advanced strategies."
+      "overviewDescription": "Learn the basics of First Person Boxing, from your first match to choosing when to defend or attack."
     },
-    "items": {
-      "overviewTitle": "All Items",
-      "overviewDescription": "Comprehensive item database with locations, stats, rarity tiers, and crafting recipes."
+    "controls": {
+      "overviewTitle": "All Controls",
+      "overviewDescription": "Find control guides for movement, guarding, slipping, and throwing punches in First Person Boxing."
     },
-    "tier-list": {
-      "overviewTitle": "All Tier List",
-      "overviewDescription": "Tier List content for Plane Crazy. Replace this overview text in the locale JSON — it feeds the category page title and description."
+    "combat": {
+      "overviewTitle": "All Combat",
+      "overviewDescription": "Understand stamina, counters, knockouts, and fighting players or AI opponents."
     },
-    "characters": {
-      "overviewTitle": "All Characters",
-      "overviewDescription": "Characters content for Plane Crazy. Replace this overview text in the locale JSON — it feeds the category page title and description."
+    "codes": {
+      "overviewTitle": "First Person Boxing Codes",
+      "overviewDescription": "Check the current First Person Boxing codes status, verification sources, and updates without guessed or unrelated Roblox codes."
     }
   },
   "home": {
     "meta": {
-      "title": "Plane Crazy Wiki — Guides, Bosses & Progression",
-      "description": "Complete Plane Crazy wiki with guides, codes, tier lists, and tips. Every page carries a last-verified date."
+      "title": "First Person Boxing Wiki — Roblox Guides & Codes",
+      "description": "Explore First Person Boxing on Roblox with controls, combat guides, verified codes status, guards, stamina, counters, and knockout tips."
     },
     "updates": {
-      "title": "Recent updates"
+      "title": "Latest wiki articles"
     },
     "popular": {
       "badge": "Popular",
       "title": "Most read",
       "quickLinks": [
         {
-          "label": "Bosses",
-          "href": "/bosses"
-        },
-        {
           "label": "Guides",
-          "href": "/guides"
+          "href": "/guides/"
         },
         {
-          "label": "Items",
-          "href": "/items"
+          "label": "Controls",
+          "href": "/controls/"
+        },
+        {
+          "label": "Codes",
+          "href": "/codes/"
         }
       ]
     },
     "closingCta": {
-      "title": "Start your Plane Crazy journey",
+      "title": "Start your First Person Boxing journey",
       "description": "Bookmark this wiki and check back after every game update.",
       "primary": "Browse all",
       "secondary": "Join the community"
     },
     "hero": {
-      "badge": "Plane Crazy",
-      "title": "Plane Crazy Wiki",
-      "description": "Complete Plane Crazy guides — bosses, items, and progression.",
+      "badge": "First Person Boxing",
+      "title": "First Person Boxing Wiki",
+      "description": "Step into the ring on Roblox. Learn the controls, defend, counter, and fight players or AI in first person.",
       "ctaPrimary": "Start reading",
-      "ctaSecondary": "Browse all",
+      "ctaSecondary": "Latest articles",
+      "developerLabel": "Developer",
+      "platformLabel": "Platform",
+      "genreLabel": "Genre",
+      "releaseDateLabel": "Released",
+      "playerCountLabel": "Players online",
       "videoId": ""
+    },
+    "gameOverview": {
+      "badge": "At a glance",
+      "title": "Everything you need to know",
+      "description": "The essentials before you jump into the game.",
+      "cards": [
+        {
+          "icon": "lucide:circle-check",
+          "title": "Game basics",
+          "description": "A first-person boxing game on Roblox.",
+          "facts": [
+            {
+              "label": "Platform",
+              "value": "Roblox"
+            },
+            {
+              "label": "Creator",
+              "value": "Can You Box?"
+            }
+          ],
+          "links": [
+            {
+              "label": "About the game",
+              "href": "/game/"
+            }
+          ]
+        },
+        {
+          "icon": "lucide:gamepad-2",
+          "title": "How to play",
+          "description": "Fight other players or practice against AI opponents.",
+          "facts": [
+            {
+              "label": "Perspective",
+              "value": "First person"
+            },
+            {
+              "label": "Opponents",
+              "value": "Players and AI"
+            }
+          ],
+          "links": [
+            {
+              "label": "Browse guides",
+              "href": "/guides/"
+            }
+          ]
+        },
+        {
+          "icon": "lucide:shield",
+          "title": "Core mechanics",
+          "description": "Time your defense and attacks to win exchanges.",
+          "facts": [
+            {
+              "label": "Defense",
+              "value": "Guards and slips"
+            },
+            {
+              "label": "Offense",
+              "value": "Counters and knockouts"
+            }
+          ],
+          "links": [
+            {
+              "label": "Explore combat",
+              "href": "/combat/"
+            }
+          ]
+        },
+        {
+          "icon": "lucide:compass",
+          "title": "Where to start",
+          "description": "Get comfortable with the controls before your next match.",
+          "facts": [
+            {
+              "label": "Resource",
+              "value": "Stamina"
+            }
+          ],
+          "links": [
+            {
+              "label": "Learn the controls",
+              "href": "/controls/"
+            },
+            {
+              "label": "Browse guides",
+              "href": "/guides/"
+            }
+          ]
+        }
+      ]
+    },
+    "gameIntro": {
+      "badge": "About the game",
+      "title": "Discover First Person Boxing",
+      "description": "A Roblox boxing game focused on first-person matches, defensive timing, and counters. Learn what to expect before stepping into the ring.",
+      "backgroundLabel": "The game",
+      "gameplayLabel": "How it plays",
+      "audienceLabel": "Who it suits",
+      "detailLink": "Read the full game overview",
+      "developerLink": "Developer profile"
+    },
+    "gameUpdates": {
+      "badge": "Patch notes",
+      "title": "Game updates",
+      "description": "Follow changes to the game and open each update for the full details.",
+      "archiveLink": "All game updates",
+      "exampleLabel": "Preview example"
+    },
+    "developerFeature": {
+      "badge": "Behind the game",
+      "title": "Meet the developer",
+      "description": "First Person Boxing is credited to Can You Box? on Roblox. Explore the creator profile and linked games.",
+      "gamesLabel": "Games",
+      "detailLink": "Developer profile"
     },
     "start": {
       "badge": "Quick start",
@@ -192,63 +299,38 @@
       "cards": [
         {
           "number": "1",
-          "title": "Bosses",
-          "description": "Browse bosses",
+          "title": "Guides",
+          "description": "Learn the basics",
           "icon": "lucide:book-open",
-          "href": "/bosses"
+          "href": "/guides/"
         },
         {
           "number": "2",
-          "title": "Guides",
-          "description": "Browse guides",
-          "icon": "lucide:book-open",
-          "href": "/guides"
+          "title": "Controls",
+          "description": "Find your footing",
+          "icon": "lucide:gamepad-2",
+          "href": "/controls/"
         },
         {
           "number": "3",
-          "title": "Items",
-          "description": "Browse items",
-          "icon": "lucide:book-open",
-          "href": "/items"
+          "title": "Combat",
+          "description": "Improve your timing",
+          "icon": "lucide:shield",
+          "href": "/combat/"
         },
         {
           "number": "4",
-          "title": "Tier-list",
-          "description": "Browse tier-list",
-          "icon": "lucide:book-open",
-          "href": "/tier-list"
+          "title": "Codes",
+          "description": "Check verified code status",
+          "icon": "lucide:ticket",
+          "href": "/codes/"
         }
       ]
     },
     "explore": {
       "title": "Explore",
       "description": "Content modules",
-      "modules": [
-        {
-          "order": 1,
-          "name": "Getting started",
-          "description": "Step-by-step progression",
-          "href": "/guides",
-          "displayType": "steps",
-          "highlights": [
-            {
-              "label": "Step 1",
-              "detail": "Finish the tutorial",
-              "badge": "5 min"
-            },
-            {
-              "label": "Step 2",
-              "detail": "Claim starter codes",
-              "badge": "1 min"
-            },
-            {
-              "label": "Step 3",
-              "detail": "First boss run",
-              "badge": "15 min"
-            }
-          ]
-        }
-      ]
+      "modules": []
     },
     "faq": {
       "title": "FAQ",
@@ -257,7 +339,7 @@
     }
   },
   "footer": {
-    "playGame": "Play Plane Crazy",
+    "playGame": "Play First Person Boxing",
     "officialDiscord": "Official Discord",
     "officialYoutube": "Official YouTube",
     "officialTwitter": "Official Twitter",
@@ -268,7 +350,7 @@
     "termsOfService": "Terms of Service",
     "copyright": "Copyright",
     "contact": "Contact",
-    "copyrightText": "© 2026 Plane Crazy Wiki. All rights reserved.",
+    "copyrightText": "© 2026 First Person Boxing Wiki. All rights reserved.",
     "community": "Community",
     "legal": "Legal"
   }

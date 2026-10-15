@@ -8,6 +8,7 @@ import * as path from 'node:path';
 
 import { locales, defaultLocale } from './src/i18n/routing';
 import { CONTENT_TYPES } from './src/config/navigation';
+import { gameUpdates } from './src/config/editorial';
 import { fallbackDetailPaths } from './src/lib/fallback-paths';
 
 /**
@@ -245,6 +246,8 @@ function decodeSitemapPath(url: string): string {
 }
 
 const noindexPaths = new Set<string>();
+// The empty game-update archive renders noindex until real patch notes exist.
+if (!gameUpdates.some((update) => !update.example)) noindexPaths.add('/updates');
 const localeCoverage = new Map<string, Set<string>>();
 const detailCoverage = new Map<string, Set<string>>();
 const categoryCoverage = new Map<string, Set<string>>();

@@ -1,7 +1,7 @@
 import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
-import { CONTENT_TYPES } from './config/navigation';
+import { ARTICLE_CONTENT_TYPES } from './config/navigation';
 
 /**
  * Wiki content collection.
@@ -45,7 +45,7 @@ const wiki = defineCollection({
        * category would otherwise build a soft-404 page that sitemap/RSS/
        * llms.txt still publish — the enum fails the build instead.
        */
-      category: z.enum(CONTENT_TYPES as [string, ...string[]]),
+      category: z.enum(ARTICLE_CONTENT_TYPES as [string, ...string[]]),
       date: z.coerce.date(),
       lastModified: z.coerce.date().optional(),
       image: image().optional(),
@@ -172,6 +172,29 @@ const categoryIndex = defineCollection({
     draft: z.boolean().default(false),
     /** Optional freshness stamp for the sitemap `lastmod` of the category URL. */
     lastModified: z.coerce.date().optional(),
+    /** Quick-answer summary for single-page sections such as codes. */
+    summary: z.string().max(400).optional(),
+    /** Structured code list used by a single-page codes/index.mdx. */
+    codes: z
+      .array(
+        z.object({
+          code: z.string().min(1),
+          reward: z.string().optional(),
+          status: z.enum(['active', 'expired']).default('active'),
+          expiryDate: z.string().max(40).optional(),
+          source: z.string().optional(),
+        }),
+      )
+      .optional(),
+    /** Visible FAQ mirrored into FAQPage JSON-LD on single-page sections. */
+    faq: z
+      .array(
+        z.object({
+          question: z.string().min(1),
+          answer: z.string().min(1),
+        }),
+      )
+      .optional(),
   }),
 });
 

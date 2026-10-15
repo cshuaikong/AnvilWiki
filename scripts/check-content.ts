@@ -42,6 +42,15 @@ const BASE = path.resolve(ROOT, 'src/content/wiki');
 const DEFAULT_LOCALE = readDefaultLocale(ROOT);
 
 const files = walkFiles(BASE, { exts: ['.mdx'] });
+const navigationPath = path.resolve(ROOT, 'src/config/navigation.ts');
+// Behavioral test fixtures intentionally contain only routing + content files.
+// No navigation config there means no declared single-page categories.
+const navSource = fs.existsSync(navigationPath) ? fs.readFileSync(navigationPath, 'utf8') : '';
+const singlePageTypes = new Set(
+  Array.from(
+    navSource.matchAll(/\{[^}\n]*key:\s*['"]([^'"]+)['"][^}\n]*singlePage:\s*true[^}\n]*\}/g),
+  ).map((match) => match[1]),
+);
 
 let errorCount = 0;
 const error = (file: string, line: number, msg: string) => {
@@ -67,6 +76,11 @@ for (const file of files) {
   // Locale of this file (path shape: <locale>/<category>/<slug>.mdx) — rule 5
   // only applies to non-default locales.
   const fileLocale = path.relative(BASE, file).split(path.sep)[0];
+  const relativeParts = path.relative(BASE, file).split(path.sep);
+  const fileCategory = relativeParts[1];
+  if (singlePageTypes.has(fileCategory) && path.basename(file) !== 'index.mdx') {
+    error(file, 0, `single-page category "${fileCategory}" only allows index.mdx`);
+  }
   let internalLinkCount = 0;
 
   let prevLevel = 1; // H1 "level" from the frontmatter title.
