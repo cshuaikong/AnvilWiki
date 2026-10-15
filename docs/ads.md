@@ -12,10 +12,10 @@
 | 环境变量 | 位置 |
 |---|---|
 | `PUBLIC_ADSTERRA_SLOT_INCONTENT_728X90` + `..._NATIVE_BANNER` | 文章页 `AdsterraSlotPair`(728×90 在前,响应式 native 在文末) |
-| `PUBLIC_ADSTERRA_SLOT_STICKY_320X50` | 文章页移动端底部锚位 `MobileAnchorAd`(可一键关闭、零 CLS) |
+| `PUBLIC_ADSTERRA_SOCIAL_BAR` | 文章详情页加载一份 Social Bar 代码；实际显示位置由 Adsterra 控制 |
 | `PUBLIC_ADSTERRA_SLOT_SIDEBAR_300X250` | 文章侧栏 `WikiSidebar`(非 compact 时) |
 
-> `SIDEBAR_160X300` / `SIDEBAR_160X600` 原先只挂在已删除的站内手册页,现在**没有挂载点**——留着可自挂,不挂也无副作用。
+> `SIDEBAR_160X300` 已用于文章详情页桌面端侧栏；`SIDEBAR_160X600` 当前没有挂载点。
 
 ⚠️ **本 fork 没有 cookie 同意横幅**:Adsterra 与 GA4 都直接加载,不做同意门控。代价是欧盟流量存在 GDPR 风险。要恢复合规门控:`git show c566440:src/components/layout/CookieConsent.astro` 可取回原组件(c566440 = 本次重构前的基线提交),同时在 AdsterraSlot 里把 `src` 改回 `data-src` 延迟加载。
 
@@ -136,10 +136,10 @@ Adsterra 是 AdSense 之外最常用的备选:**零流量门槛、审核分钟�
 | **Banner** | 常规横幅(300×250 / 320×50 / 728×90 等标准尺寸) | CPM 约 $2-10,随地区浮动 | 低 | **首选**,和模板广告位同性质 |
 | **Direct Link** | 一条纯 URL,点了跳广告页;放哪都行(文中、按钮、社媒) | CPM/CPA 混合计价 | 零(不放就不存在) | 灵活零成本,适合嵌在"相关工具/下载"类链接位 |
 | **In-Page Push** | 页面内小卡片通知样式,不弹窗 | CPC/CPM/CPA | 中低 | 可选的补充格式 |
-| **Social Bar** | Adsterra 独有,in-page push 加强版(插屏+横幅组合模板) | 高于普通 banner | 中 | 流量起来后再试,小站先别 |
+| **Social Bar** | 通知、图标、小组件等多种样式 | 随流量变化 | 中 | 当前文章页已启用，观察实际样式和遮挡情况 |
 | **Popunder** | 打开/关闭页面时在背后弹整页 | CPM 全格式最高(部分国家/品类极高) | **高** | **挂 AdSense 的站禁用**,见下方红线 |
 
-新手公式:**一两个 Banner + 一个 Direct Link 起步**,收入曲线稳了再考虑加格式。Adsterra 官方博客推荐的"多 banner + Social Bar + Popunder"是追求极限收入的配置,以牺牲体验为代价——游戏攻略站靠 Google 排名吃饭,别学。
+当前文章页使用两种内容广告、一个桌面侧栏广告和一个 Social Bar。检查手机端实际素材的位置与可关闭性，再决定是否需要在 Adsterra 后台调整样式。
 
 ### ⚠️ 与 AdSense 共存的红线(必读)
 
@@ -170,7 +170,7 @@ Google 的[广告投放位置政策](https://support.google.com/adsense/answer/1
 - **为什么绝不加 `allow-top-navigation`**:移动端部分创意会试图带着你的整个页面跳走(劫持),这个权限一给就拦不住。劫持的教训同样适用于回报方向:把用户体验砸了,排名迟早还回来
 - **诚实的边界(必读)**:`allow-scripts` + `allow-same-origin` 同开(素材渲染的硬前提,见上条)时,这个 sandbox **不是对抗恶意创意的硬安全边界**——同源素材的脚本可触达父页面 DOM,理论上能绕过沙箱,省略 `allow-top-navigation` 只是导航摩擦而非防线;真隔离要把广告挂到独立源(独立域名)。接受同源挂载的理由:素材由 Adsterra 平台侧投放与审核、贴哪段代码由你自己控制、零成本部署且 fork 可整体清理。若你要挂**不可信来源**的广告代码,请按不可信第三方评估,别套用本节
 - **同意门控(与 AdSense 同门)**:模板的 `AdsterraSlot` 组件在同意横幅激活时(`PUBLIC_GA_ID` 或 `PUBLIC_ADSENSE_CLIENT` 任一非空,即横幅自身的渲染条件)不直接加载 iframe——先挂一个无 `src` 的空框(`data-src` 存真实地址),访客已同意(localStorage 里有 CookieConsent 写入的 `accepted`)或当场点下「同意」(组件派发 `aw:consent-accepted` 事件)后才换成 `src` 开始加载;拒绝或未选择就永不加载,与 GA/AdSense 等 `__awLoadTrackers` 的门控承诺一致。横幅未激活(两个 env 都空,开箱状态)则维持直接加载。注意:上面手写 iframe 的挂法**没有**这层门控,在意合规请把广告位交给 `AdsterraSlot` 组件挂(文章/手册/落地页成对出现的 728×90 + Native 已收敛为 `AdsterraSlotPair`,同意门控由内部 `AdsterraSlot` 自动继承)
-- **移动端 320×50 底部锚位(v2.28.0)**:文章页挂 `MobileAnchorAd`(env `PUBLIC_ADSTERRA_SLOT_STICKY_320X50`),三件套保证不砸阅读体验——①可一键关闭且记忆(localStorage,先例 StickyBanner);②`position: fixed` 零 CLS,显示时给正文加移动端底部内边距,文末内容永不被盖;③与同意门控同门(拒绝/未选连空条都不出)。**顶部粘性仍是有意排除项**(StickyBanner 注释:顶部 320×50 吃掉首屏 ~16%,弹跳驱动)——底部锚位是内容从条上方滚过,阅读流不被打断,这是两者的本质区别
+- **文章页 Social Bar**:原 320×50 底部锚位已替换为 `SocialBarAd`，由 `PUBLIC_ADSTERRA_SOCIAL_BAR` 填完整脚本 URL 启用。代码直接在文章页加载一次；其展示位置、样式和关闭方式由 Adsterra 控制，不能保证只在底部。
 
 **模板预挂位总清单**(6 单元,均为 env 门控:对应 `PUBLIC_ADSTERRA_SLOT_*` 留空 = 该位零渲染;html 文件也要放进 `public/ads/`,缺文件 iframe 是空框):
 
@@ -178,7 +178,6 @@ Google 的[广告投放位置政策](https://support.google.com/adsense/answer/1
 |---|---|---|
 | `incontent-728x90` | 728×90(移动端隐藏) | 文章正文后、首页速览后、`/game/` 官方事实后；手册课页、主落地页(en+zh)、对比页(en+zh)、社群精华(en+zh)——正文流中的桌面横幅 |
 | `native-banner` | 响应式 Native(700×240 基准) | 文章相关文章后、首页最新文章后、`/game/` 证据边界后、wiki 栏目/单页 codes 内容末尾；另有文档中心三目录页(en+zh) |
-| `sticky-320x50` | 320×50 | 文章页底部锚位 `MobileAnchorAd`(可关闭/零 CLS/同意门控,见上条) |
 | `sidebar-160x300` | 160×300 | 文章页桌面目录栏、手册课页目录下粘性 |
 | `sidebar-160x600` | 160×600 | 手册课页左右页边固定(≥1700px 视口,左右各一) |
 | `sidebar-300x250` | 300×250 | **已建未挂载**(示例单元;需要时用 `<AdsterraSlot name="sidebar-300x250" …/>` 自行挂) |
@@ -187,7 +186,7 @@ Google 的[广告投放位置政策](https://support.google.com/adsense/answer/1
 
 **当前站点密度规则**:Hero、导航下方、正文开头、主要 CTA 之间、开发者页、法律/联系页和无真实更新的空页不挂广告。首页与 `/game/` 最多 2 个流内单元;栏目页最多 1 个;文章页桌面最多 3 个(正文横幅+文末 Native+目录栏竖幅),移动端最多 2 个(Native+可关闭底栏)。所有位置继续遵守 env 空值零渲染,所以可以逐个开启而不必一次开满。
 
-全站生效格式(Popunder / Social Bar 类)是另一条路:这类**行为触发型**格式必须直接粘进 `src/components/layout/BaseLayout.astro` 的 `<head>`、不能放进 iframe(要捕捉主页面的用户交互才能触发,见上文政策边界条)——但**挂 AdSense 的站禁用 Popunder**(见上节红线),Social Bar 流量起来前也别碰,所以正常路径用不到它。
+Social Bar 的脚本由 `SocialBarAd.astro` 直接加载到文章详情页，不放进 `public/ads/` 的 iframe。一个页面只加载一次；如果希望固定只在底部展示，需要在 Adsterra 后台或联系其支持人员调整样式与位置。
 
 模板自带的 3 个 AdSense 位**不需要任何改动**——它们由 AdSense 的 4 个环境变量控制,和 Adsterra 的 iframe 互不干扰。
 

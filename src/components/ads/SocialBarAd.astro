@@ -1,0 +1,6 @@
+---
+/** Social Bar must run in the page context; its layout is controlled by Adsterra. */
+const scriptUrl = import.meta.env.PUBLIC_ADSTERRA_SOCIAL_BAR;
+---
+
+{scriptUrl && <script is:inline data-cfasync="false" src={scriptUrl}></script>}

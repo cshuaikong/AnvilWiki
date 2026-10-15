@@ -232,7 +232,7 @@ Dashboard（方案 C）在 Pages → **Settings** → **Environment variables** 
 | `PUBLIC_ADSENSE_SLOT_INCONTENT` | 可选 | InContent 文章内 slot ID                            |
 | `PUBLIC_ADSTERRA_SLOT_INCONTENT_728X90` | 可选 | Adsterra 728×90 横幅（移动端隐藏）                     |
 | `PUBLIC_ADSTERRA_SLOT_NATIVE_BANNER`    | 可选 | Adsterra 响应式 Native                                 |
-| `PUBLIC_ADSTERRA_SLOT_STICKY_320X50`    | 可选 | Adsterra 文章页底部锚位（`MobileAnchorAd`）            |
+| `PUBLIC_ADSTERRA_SOCIAL_BAR`             | 可选 | 文章页 Social Bar 脚本完整 URL；展示位置由 Adsterra 控制 |
 | `PUBLIC_ADSTERRA_SLOT_SIDEBAR_160X300`  | 可选 | Adsterra 160×300 竖幅（手册课页粘性）                  |
 | `PUBLIC_ADSTERRA_SLOT_SIDEBAR_160X600`  | 可选 | Adsterra 160×600 竖幅（≥1700px 视口页边固定）          |
 | `PUBLIC_ADSTERRA_SLOT_SIDEBAR_300X250`  | 可选 | Adsterra 300×250（示例单元，模板未挂载）               |

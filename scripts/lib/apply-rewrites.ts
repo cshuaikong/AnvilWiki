@@ -920,6 +920,7 @@ export const DEMO_VAR_VALUES: readonly string[] = [
   'b1ede294b384be6d92ae788cd969eec0',
   '2f3c4c40d6024875230ea70acccfe75a',
   '41242b2ed864abe88db10fd6913fe143',
+  'https://bicea.org/14/73e698debf0ad9a4b40476ea3d7b4f21',
   // Demo GA4 measurement ID
   'G-X10CG7N6P6',
   // Demo site's legacy IndexNow env key. New forks use .indexnow-key;
@@ -995,7 +996,7 @@ const WRANGLER_VARS_TEMPLATE: VarSpec[] = [
   },
   { key: 'PUBLIC_ADSTERRA_SLOT_INCONTENT_728X90', commented: true },
   { key: 'PUBLIC_ADSTERRA_SLOT_NATIVE_BANNER', commented: true },
-  { key: 'PUBLIC_ADSTERRA_SLOT_STICKY_320X50', commented: true },
+  { key: 'PUBLIC_ADSTERRA_SOCIAL_BAR', commented: true },
   { key: 'PUBLIC_ADSTERRA_SLOT_SIDEBAR_160X300', commented: true },
   { key: 'PUBLIC_ADSTERRA_SLOT_SIDEBAR_160X600', commented: true },
   { key: 'PUBLIC_GA_ID', commented: true },
@@ -1165,7 +1166,6 @@ export const DEMO_ARTICLE_IMAGES = [
  * only while it still contains the demo key below.
  */
 export const DEMO_ADSTERRA_UNIT_MARKERS: Record<string, string> = {
-  'ads/sticky-320x50.html': '2f3c4c40d6024875230ea70acccfe75a',
   'ads/sidebar-300x250.html': '72f65aae2e14988904cffe17cfe697e2',
   'ads/sidebar-160x300.html': '41242b2ed864abe88db10fd6913fe143',
   'ads/sidebar-160x600.html': 'fba4ed072bed8749c56ebcf099b30f0e',
@@ -1202,7 +1202,6 @@ export const DEMO_PUBLIC_FILES = [
   // keys are config, not template content; a fork follows docs/ads.md and
   // pastes its own snippets. Keep in sync with setup.yml — pinned by
   // tests/apply-template.test.ts.
-  'ads/sticky-320x50.html',
   'ads/sidebar-300x250.html',
   'ads/sidebar-160x300.html',
   'ads/sidebar-160x600.html',

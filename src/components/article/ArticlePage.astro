@@ -15,7 +15,7 @@
 import { Icon } from 'astro-icon/components';
 import { render } from 'astro:content';
 import LocaleLayout from '~/components/layout/LocaleLayout.astro';
-import MobileAnchorAd from '~/components/ads/MobileAnchorAd.astro';
+import SocialBarAd from '~/components/ads/SocialBarAd.astro';
 import AdsterraSlotPair from '~/components/ads/AdsterraSlotPair.astro';
 import AdsterraSlot from '~/components/ads/AdsterraSlot.astro';
 import AffiliateSuggestion from '~/components/ads/AffiliateSuggestion.astro';
@@ -480,9 +480,8 @@ const jsonLd = [
     {/* Affiliate suggestions — config empty = component renders nothing (v2.0) */}
     <AffiliateSuggestion locale={locale} category={entry.data.category} />
 
-    {/* Adsterra 320×50 bottom anchor — mobile only, dismissible;
-        env empty = renders nothing (zero-ad contract). */}
-    <MobileAnchorAd />
+    {/* One Social Bar script per article. Adsterra controls its visual position. */}
+    <SocialBarAd />
   </article>
     {/* Desktop TOC — sticky, between article and sidebar */}
     <div class="hidden w-56 shrink-0 lg:block xl:w-64">

@@ -126,7 +126,7 @@ if (existsSync(join(scratch, 'public/google8362d9398114b66b.html'))) {
 }
 // Demo Adsterra unit pages (public/ads/*.html) carry the DEMO's ad-unit keys —
 // config, not template content (DEMO_PUBLIC_FILES). Vacuous until committed.
-for (const unit of ['sticky-320x50', 'sidebar-300x250', 'sidebar-160x300', 'sidebar-160x600', 'incontent-728x90', 'native-banner']) {
+for (const unit of ['sidebar-300x250', 'sidebar-160x300', 'sidebar-160x600', 'incontent-728x90', 'native-banner']) {
   if (existsSync(join(scratch, 'public', 'ads', `${unit}.html`))) {
     fail(`demo ad unit page still present after fork init: public/ads/${unit}.html — DEMO_PUBLIC_FILES was not cleared`);
   }
