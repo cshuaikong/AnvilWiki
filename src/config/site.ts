@@ -67,12 +67,12 @@ export const site: SiteConfig = {
   name: 'First Person Boxing Wiki',
   shortName: 'First Person Boxing Wiki',
   description: 'A first-person Roblox boxing game built around slips, guards, stamina, counters, and knockouts against players or AI.',
-  domain: 'firstpersonboxing.invalid',
+  domain: 'firstpersonboxing.fun',
   tagline: 'Master the ring in first person',
   legalNotice: 'First Person Boxing Wiki is an independent fan site. Not affiliated with or endorsed by Can You Box? or Roblox.',
   // Set a real address if you run no social channels — the contact page
   // renders it as a mailto link.
-  contactEmail: '',
+  contactEmail: 'contact@firstpersonboxing.fun',
   social: {
     official: 'https://www.roblox.com/games/132956556682909/First-Person-Boxing',
   },

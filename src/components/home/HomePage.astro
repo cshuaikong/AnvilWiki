@@ -16,6 +16,7 @@
  */
 import { Icon } from 'astro-icon/components';
 import LocaleLayout from '~/components/layout/LocaleLayout.astro';
+import AdsterraSlot from '~/components/ads/AdsterraSlot.astro';
 import LazyYouTube from '~/components/video/LazyYouTube.astro';
 import GameOverview from '~/components/home/GameOverview.astro';
 import GameIntro from '~/components/home/GameIntro.astro';
@@ -161,6 +162,9 @@ const updates: HomeUi['updates'] = home.updates;
   </section>
 
   {gameOverview && <GameOverview locale={locale} content={gameOverview} />}
+  {/* First monetization point: below the useful hero + overview content.
+      Fixed 728 creative stays desktop-only; env empty = zero DOM. */}
+  <AdsterraSlot name="incontent-728x90" width={728} height={90} hideOnMobile />
   <GameIntro copy={home.gameIntro} />
   <GameUpdates copy={home.gameUpdates} />
 
@@ -198,6 +202,10 @@ const updates: HomeUi['updates'] = home.updates;
         </div>
     </div>
   </section>
+
+  {/* Responsive unit after the article discovery block, never inside Hero or
+      between a card and its CTA. */}
+  <AdsterraSlot name="native-banner" width={700} height={240} />
 
   <DeveloperFeature copy={home.developerFeature} />
 

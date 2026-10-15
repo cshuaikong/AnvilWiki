@@ -184,22 +184,22 @@
       "description": "The essentials before you jump into the game.",
       "cards": [
         {
-          "icon": "lucide:circle-check",
-          "title": "Game basics",
-          "description": "A first-person boxing game on Roblox.",
+          "icon": "lucide:monitor-smartphone",
+          "title": "Play access",
+          "description": "Join from the Roblox device that suits you.",
           "facts": [
             {
-              "label": "Platform",
-              "value": "Roblox"
+              "label": "Devices",
+              "value": "PC, mobile, console"
             },
             {
-              "label": "Creator",
-              "value": "Can You Box?"
+              "label": "Server size",
+              "value": "Up to 16 players"
             }
           ],
           "links": [
             {
-              "label": "About the game",
+              "label": "Game overview",
               "href": "/game/"
             }
           ]

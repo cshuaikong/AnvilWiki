@@ -176,14 +176,16 @@ Google 的[广告投放位置政策](https://support.google.com/adsense/answer/1
 
 | 单元(`public/ads/*.html`) | 尺寸 | 挂载点 |
 |---|---|---|
-| `incontent-728x90` | 728×90(移动端隐藏) | 文章页、手册课页、主落地页(en+zh)、对比页(en+zh)、社群精华(en+zh)——`AdsterraSlotPair` 前置位 |
-| `native-banner` | 响应式 Native(700×240 基准) | 同上成对后置位;另有文档中心三目录页(en+zh)单独挂 |
+| `incontent-728x90` | 728×90(移动端隐藏) | 文章正文后、首页速览后、`/game/` 官方事实后；手册课页、主落地页(en+zh)、对比页(en+zh)、社群精华(en+zh)——正文流中的桌面横幅 |
+| `native-banner` | 响应式 Native(700×240 基准) | 文章相关文章后、首页最新文章后、`/game/` 证据边界后、wiki 栏目/单页 codes 内容末尾；另有文档中心三目录页(en+zh) |
 | `sticky-320x50` | 320×50 | 文章页底部锚位 `MobileAnchorAd`(可关闭/零 CLS/同意门控,见上条) |
-| `sidebar-160x300` | 160×300 | 手册课页目录下粘性 |
+| `sidebar-160x300` | 160×300 | 文章页桌面目录栏、手册课页目录下粘性 |
 | `sidebar-160x600` | 160×600 | 手册课页左右页边固定(≥1700px 视口,左右各一) |
 | `sidebar-300x250` | 300×250 | **已建未挂载**(示例单元;需要时用 `<AdsterraSlot name="sidebar-300x250" …/>` 自行挂) |
 
 > fork 清理:这 6 个 html 初始化时按**内容**判定清理——把内容换成你自己的广告代码后,重跑 apply-template 不会被误删;仍含模板 demo 单元 key 的原样文件才会被移除。
+
+**当前站点密度规则**:Hero、导航下方、正文开头、主要 CTA 之间、开发者页、法律/联系页和无真实更新的空页不挂广告。首页与 `/game/` 最多 2 个流内单元;栏目页最多 1 个;文章页桌面最多 3 个(正文横幅+文末 Native+目录栏竖幅),移动端最多 2 个(Native+可关闭底栏)。所有位置继续遵守 env 空值零渲染,所以可以逐个开启而不必一次开满。
 
 全站生效格式(Popunder / Social Bar 类)是另一条路:这类**行为触发型**格式必须直接粘进 `src/components/layout/BaseLayout.astro` 的 `<head>`、不能放进 iframe(要捕捉主页面的用户交互才能触发,见上文政策边界条)——但**挂 AdSense 的站禁用 Popunder**(见上节红线),Social Bar 流量起来前也别碰,所以正常路径用不到它。
 

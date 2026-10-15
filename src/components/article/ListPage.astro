@@ -7,6 +7,7 @@
  */
 import { Icon } from 'astro-icon/components';
 import LocaleLayout from '~/components/layout/LocaleLayout.astro';
+import AdsterraSlot from '~/components/ads/AdsterraSlot.astro';
 import CategoryGrid from '~/components/article/CategoryGrid.astro';
 import CodesTable from '~/components/article/CodesTable.astro';
 import { NAVIGATION_CONFIG } from '~/config/navigation';
@@ -175,5 +176,9 @@ const jsonLd = [
     )}
 
     {!navItem?.singlePage && <CategoryGrid locale={locale} category={category} entries={entries} />}
+
+    {/* Category and single-page code routes get one low-density responsive
+        unit only, after their useful content/list. */}
+    <AdsterraSlot name="native-banner" width={700} height={240} />
   </div>
 </LocaleLayout>
