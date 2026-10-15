@@ -914,6 +914,12 @@ export const DEMO_VAR_VALUES: readonly string[] = [
   '89fabda9f10bc13544cae84f0211d77c',
   'fba4ed072bed8749c56ebcf099b30f0e',
   'e2ad36227bacdad94a4bfe6a9a6d3dac',
+  // First Person Boxing production Adsterra unit keys. They remain active on
+  // this site, but Initialize/apply-template must strip them from new forks.
+  '0954d16debd9b82278ef3765f6c1564d',
+  'b1ede294b384be6d92ae788cd969eec0',
+  '2f3c4c40d6024875230ea70acccfe75a',
+  '41242b2ed864abe88db10fd6913fe143',
   // Demo GA4 measurement ID
   'G-X10CG7N6P6',
   // Demo site's legacy IndexNow env key. New forks use .indexnow-key;
@@ -1159,12 +1165,12 @@ export const DEMO_ARTICLE_IMAGES = [
  * only while it still contains the demo key below.
  */
 export const DEMO_ADSTERRA_UNIT_MARKERS: Record<string, string> = {
-  'ads/sticky-320x50.html': 'e2ad36227bacdad94a4bfe6a9a6d3dac',
+  'ads/sticky-320x50.html': '2f3c4c40d6024875230ea70acccfe75a',
   'ads/sidebar-300x250.html': '72f65aae2e14988904cffe17cfe697e2',
-  'ads/sidebar-160x300.html': '89fabda9f10bc13544cae84f0211d77c',
+  'ads/sidebar-160x300.html': '41242b2ed864abe88db10fd6913fe143',
   'ads/sidebar-160x600.html': 'fba4ed072bed8749c56ebcf099b30f0e',
-  'ads/incontent-728x90.html': 'e0dce7760389a360cba34b93333ea2d0',
-  'ads/native-banner.html': '8fabf9ea9ed2d89cba2ff9888f939c26',
+  'ads/incontent-728x90.html': '0954d16debd9b82278ef3765f6c1564d',
+  'ads/native-banner.html': 'b1ede294b384be6d92ae788cd969eec0',
 };
 
 export function isDemoPublicFileContent(rel: string, source: string): boolean {
