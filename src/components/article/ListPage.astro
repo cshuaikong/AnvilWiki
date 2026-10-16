@@ -177,8 +177,9 @@ const jsonLd = [
 
     {!navItem?.singlePage && <CategoryGrid locale={locale} category={category} entries={entries} />}
 
-    {/* Category and single-page code routes get one low-density responsive
-        unit only, after their useful content/list. */}
+    {/* Category and single-page code routes keep a responsive unit after
+        their useful content/list. The First Person Boxing codes article also
+        places two distinct existing units within its MDX body. */}
     <AdsterraSlot name="native-banner" width={700} height={240} />
   </div>
 </LocaleLayout>

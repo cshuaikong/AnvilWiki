@@ -40,11 +40,13 @@ interface Props {
    * fills any width.
    */
   hideOnMobile?: boolean;
+  /** Scale a fixed-size creative to the available width instead of clipping it. */
+  scaleToFit?: boolean;
 }
 
 import { currentSharedStrings } from '~/lib/shared-ui';
 
-const { name, width, height, label = true, hideOnMobile = false } = Astro.props;
+const { name, width, height, label = true, hideOnMobile = false, scaleToFit = false } = Astro.props;
 const envKey = `PUBLIC_ADSTERRA_SLOT_${name.replace(/-/g, '_').toUpperCase()}`;
 const show = !!import.meta.env[envKey];
 const iframeSrc = `/ads/${name}.html`;
@@ -63,13 +65,43 @@ const adLabel = sharedStrings.adLabel ?? 'Advertisement';
       {label && (
         <span class="mb-1 text-[10px] uppercase tracking-wider text-muted-foreground">{adLabel}</span>
       )}
-      <iframe
-        src={iframeSrc}
-        style={`width:100%;max-width:${width}px;height:${height}px;border:0`}
-        loading="lazy"
-        sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-        title={adLabel}
-      />
+      {scaleToFit ? (
+        <div data-ad-scale data-width={width} data-height={height} class="w-full" style={`max-width:${width}px;height:${height}px;overflow:hidden`}>
+          <iframe
+            src={iframeSrc}
+            style={`width:${width}px;max-width:none;height:${height}px;border:0;transform-origin:top left`}
+            loading="lazy"
+            sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+            title={adLabel}
+          />
+        </div>
+      ) : (
+        <iframe
+          src={iframeSrc}
+          style={`width:100%;max-width:${width}px;height:${height}px;border:0`}
+          loading="lazy"
+          sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+          title={adLabel}
+        />
+      )}
     </div>
   )
 }
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-ad-scale]').forEach((container) => {
+    const iframe = container.querySelector('iframe');
+    const width = Number(container.dataset.width);
+    const height = Number(container.dataset.height);
+    if (!iframe || !width || !height) return;
+
+    const resize = () => {
+      const scale = Math.min(1, container.clientWidth / width);
+      iframe.style.transform = `scale(${scale})`;
+      container.style.height = `${Math.ceil(height * scale)}px`;
+    };
+    resize();
+    if (typeof ResizeObserver !== 'undefined') new ResizeObserver(resize).observe(container);
+    else window.addEventListener('resize', resize);
+  });
+</script>
