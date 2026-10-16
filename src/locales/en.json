@@ -56,11 +56,11 @@
     "codesFaq": [
       {
         "question": "Are there verified First Person Boxing codes?",
-        "answer": "No official game-specific redemption codes were verified during the initial site research. This wiki will not publish guessed or unrelated Roblox platform codes."
+        "answer": "UPPERCUT and FPSBOXING1 were reported by Pro Game Guides and confirmed by the site owner on October 16, 2026. Check the codes page for dated rewards and status."
       },
       {
-        "question": "When will codes be added?",
-        "answer": "Codes will be listed only after they can be traced to the official game page or a verified developer announcement."
+        "question": "Where can I see the latest code status?",
+        "answer": "The First Person Boxing codes page lists active and expired codes with rewards, sources, and the last check date."
       }
     ],
     "possiblyOutdated": "This guide was last checked on",
@@ -130,7 +130,7 @@
     },
     "codes": {
       "overviewTitle": "First Person Boxing Codes",
-      "overviewDescription": "Check the current First Person Boxing codes status, verification sources, and updates without guessed or unrelated Roblox codes."
+      "overviewDescription": "Find active First Person Boxing Roblox codes, Spin rewards, redemption steps, and the latest checked status."
     }
   },
   "home": {
@@ -321,7 +321,7 @@
         {
           "number": "4",
           "title": "Codes",
-          "description": "Check verified code status",
+          "description": "Claim current Spin rewards",
           "icon": "lucide:ticket",
           "href": "/codes/"
         }
